@@ -1,0 +1,57 @@
+INSERT INTO mastpersonas
+				SET
+					CodPersona = '000133',
+					TipoPersona = 'J',
+					EsEmpleado = 'N',
+					EsProveedor = 'S',
+					EsCliente = 'N',
+					EsOtros = 'N',
+					Busqueda = 'EDGAR BOLIVAR',
+					NomCompleto = 'EDGAR BOLIVAR',
+					Apellido1 = '',
+					Apellido2 = '',
+					Nombres = '',
+					Sexo = '',
+					EstadoCivil = '',
+					Fnacimiento = '',
+					Direccion = 'VALENCIA',
+					CiudadNacimiento = '0103',
+					CiudadDomicilio = '0103',
+					Lnacimiento = 'TUCUPITA, DELTA AMACURO',
+					Email = '',
+					Telefono1 = '',
+					Telefono2 = '',
+					Fax = '',
+					NomEmerg1 = '',
+					DirecEmerg1 = '',
+					TipoDocumento = '06',
+					DocFiscal = 'J166987314',
+					Ndocumento = 'J166987314',
+					Estado = 'A',
+					UltimoUsuario = 'KMILANO',
+					UltimaFecha = NOW();
+
+DELETE FROM bancopersona WHERE CodPersona = '000133' AND FlagPrincipal='S';
+
+INSERT INTO mastproveedores
+					SET
+						CodProveedor = '000133',
+						NroProveedor = '000024',
+						CodTipoDocumento = 'AGA',
+						CodTipoPago = '02',
+						CodFormaPago = '003',
+						CodTipoServicio = 'IVAR3',
+						DiasPago = '',
+						RegistroPublico = '',
+						LicenciaMunicipal = '',
+						FechaConstitucion = '',
+						RepresentanteLegal = '',
+						ContactoVendedor = '',
+						FlagSNC = 'N',
+						NroInscripcionSNC = '',
+						FechaEmisionSNC = '',
+						FechaValidacionSNC = '',
+						Nacionalidad = 'N',
+						UltimoUsuario = 'KMILANO',
+						UltimaFecha = NOW();
+
