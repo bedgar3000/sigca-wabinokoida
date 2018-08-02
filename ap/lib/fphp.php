@@ -205,10 +205,16 @@ function loadSelectValores($tabla, $codigo=NULL, $opt=0) {
 		case "adelanto-estado":
 			$c[] = "PR"; $v[] = "En Preparación";
 			$c[] = "AP"; $v[] = "Aprobado";
-			$c[] = "TR"; $v[] = "Transferido";
+			$c[] = "GE"; $v[] = "Generado";
 			$c[] = "PA"; $v[] = "Pagado";
 			$c[] = "AC"; $v[] = "Aplicado";
 			$c[] = "AN"; $v[] = "Anulado";
+			break;
+			
+		case "gastos-aplicacion":
+			$c[] = "CC"; $v[] = "Caja Chica";
+			$c[] = "RG"; $v[] = "Reporte Gastos";
+			$c[] = "AP"; $v[] = "Adelanto a Proveedores";
 			break;
 	}
 	
@@ -380,10 +386,16 @@ function printValores($tabla, $codigo) {
 		case "adelanto-estado":
 			$c[] = "PR"; $v[] = "En Preparación";
 			$c[] = "AP"; $v[] = "Aprobado";
-			$c[] = "TR"; $v[] = "Transferido";
+			$c[] = "GE"; $v[] = "Generado";
 			$c[] = "PA"; $v[] = "Pagado";
 			$c[] = "AC"; $v[] = "Aplicado";
 			$c[] = "AN"; $v[] = "Anulado";
+			break;
+			
+		case "gastos-aplicacion":
+			$c[] = "CC"; $v[] = "Caja Chica";
+			$c[] = "RG"; $v[] = "Reporte Gastos";
+			$c[] = "AP"; $v[] = "Adelanto a Proveedores";
 			break;
 	}
 	

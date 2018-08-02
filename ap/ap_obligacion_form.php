@@ -142,7 +142,7 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
 		$disabled_documento = "disabled";
 		$disabled_distribucion = "disabled";
 		$disabled_anular = "disabled";
-		$mostrarTabDistribucion = "mostrarTab('tab', 4, 5);";
+		$mostrarTabDistribucion = "mostrarTab('tab', 4, 6);";
 	}
 	
 	elseif ($opcion == "revisar") {
@@ -162,7 +162,7 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
 		$disabled_documento = "disabled";
 		$disabled_distribucion = "disabled";
 		$disabled_anular = "disabled";
-		$mostrarTabDistribucion = "mostrarTab('tab', 4, 5);";
+		$mostrarTabDistribucion = "mostrarTab('tab', 4, 6);";
 		$dFechaRevision = "";
 	}
 	
@@ -183,7 +183,7 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
 		$disabled_documento = "disabled";
 		$disabled_distribucion = "disabled";
 		$disabled_anular = "disabled";
-		$mostrarTabDistribucion = "mostrarTab('tab', 4, 5);";
+		$mostrarTabDistribucion = "mostrarTab('tab', 4, 6);";
 		$dFechaAprobado = "";
 	}
 	
@@ -199,7 +199,7 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
 		$disabled_impuesto = "disabled";
 		$disabled_documento = "disabled";
 		$disabled_distribucion = "disabled";
-		$mostrarTabDistribucion = "mostrarTab('tab', 4, 5);";
+		$mostrarTabDistribucion = "mostrarTab('tab', 4, 6);";
 	}
 	
 	$disabled_documento = "disabled";
@@ -718,6 +718,101 @@ elseif ($opcion == "viaticos-generar") {
 	##	
 	$action = "gehen.php?anz=$origen";
 }
+elseif ($opcion == "adelanto-generar") {
+	$CodAdelanto = $sel_registros;
+	##	
+	$sql = "SELECT
+				ga.CodAdelanto,
+				ga.CodProveedor,
+				(CASE WHEN ga.CodClasificacion = 'AP' THEN 'APR' ELSE 'ACO' END) AS CodTipoDocumento,
+				ga.CodOrganismo,
+				cbd.NroCuenta,
+				ga.CodTipoPago,
+				'$FechaActual' AS FechaRegistro,
+				'$FechaActual' AS FechaVencimiento,
+				'S' AS FlagGenerarPago,
+				ga.CodTipoServicio,
+				ga.CodClasificacion AS ReferenciaTipoDocumento,
+				ga.NroAdelanto AS ReferenciaNroDocumento,
+				(ga.MontoAfecto + ga.MontoNoAfecto) As MontoObligacion,
+				'0.00' AS MontoImpuestoOtros,
+				ga.MontoNoAfecto,
+				ga.MontoAfecto,
+				'0.00' AS MontoAdelanto,
+				'0.00' AS MontoImpuesto,
+				'0.00' AS MontoPagoParcial,
+				'S' AS FlagContabilizacionPendiente,
+				'S' AS FlagContPendientePub20,
+				ga.Descripcion AS Comentarios,
+				ga.Descripcion AS ComentariosAdicional,
+				'$FechaActual' AS FechaRecepcion,
+				'$FechaActual' AS FechaDocumento,
+				'N' AS FlagAfectoIGV,
+				'N' AS FlagDiferido,
+				'N' AS FlagAdelanto,
+				'N' AS FlagPagoDiferido,
+				'PR' AS Estado,
+				'N' AS FlagCompromiso,
+				'N' AS FlagPresupuesto,
+				'N' AS FlagObligacionAuto,
+				'N' AS FlagObligacionDirecta,
+				'N' AS FlagCajaChica,
+				'N' AS FlagPagoIndividual,
+				CONCAT(ga.CodClasificacion, '-', ga.NroAdelanto) AS NroControl,
+				CONCAT(ga.CodClasificacion, '-', ga.NroAdelanto) AS NroFactura,
+				'$FechaActual' AS FechaProgramada,
+				'$FechaActual' AS FechaPreparacion,
+				'$PeriodoActual' AS Periodo,
+				'S' AS FlagDistribucionManual,
+				'$FechaActual' AS FechaFactura,
+				'N' AS FlagVerificado,
+				'' AS CodPresupuesto,
+				'N' AS FlagNomina,
+				'N' AS FlagFacturaPendiente,
+				'' AS CodFuente,
+				SUBSTRING(ga.Periodo, 1, 4) AS Ejercicio,
+				'' AS CategoriaProg,
+				p.DocFiscal,
+				p.NomCompleto,
+				p.Busqueda,
+				pv.DiasPago,
+				ga.CodPagarA AS CodProveedorPagar,
+				ga.NomPagarA AS NomProveedorPagar,
+				td.FlagProvision,
+				td.CodVoucher,
+				ga.CodCentroCosto
+			FROM
+				ap_gastoadelanto ga
+				INNER JOIN mastpersonas p ON (ga.CodProveedor = p.CodPersona)
+				INNER JOIN ap_tipodocumento td ON (td.CodTipoDocumento = (CASE WHEN ga.CodClasificacion = 'AP' THEN 'APR' ELSE 'ACO' END))
+				LEFT JOIN mastproveedores pv ON (ga.CodProveedor = pv.CodProveedor)
+				LEFT JOIN ap_ctabancariadefault cbd ON (cbd.CodOrganismo = ga.CodOrganismo AND cbd.CodTipoPago = ga.CodTipoPago)
+			WHERE ga.CodAdelanto = '$CodAdelanto'";
+	$field_adelanto = getRecord($sql);
+	$field_obligacion = $field_adelanto;
+	##	
+	$field_obligacion['IngresadoPor'] = $_SESSION["CODPERSONA_ACTUAL"];
+	$field_obligacion['NomIngresadoPor'] = $_SESSION["NOMBRE_USUARIO_ACTUAL"];
+	$disabled_impuesto = "disabled";
+	$disabled_documento = "disabled";
+	$disabled_distribucion = "disabled";
+	$disabled_anular = "disabled";
+	$dFlagCompromiso = "disabled";
+	$disabled_modificar = "disabled";
+	$display_modificar = "display:none;";
+	$disabled_anular = "disabled";
+	$disabled_impuesto = "disabled";
+	$mostrarTabDistribucion = "mostrarTabDistribucionObligacion();";
+	$dFechaPreparacion = "";
+	##	
+	$accion = "nuevo";
+	$titulo = "Nueva Obligación (Adelanto)";
+	$label_submit = "Guardar";
+	##	
+
+	##	
+	$action = "gehen.php?anz=$origen";
+}
 //	------------------------------------
 $_width = 1100;
 ?>
@@ -734,12 +829,12 @@ $_width = 1100;
             <div class="header">
             <ul id="tab">
             <!-- CSS Tabs -->
-            <li id="li1" onclick="currentTab('tab', this);" class="current"><a href="#" onclick="mostrarTab('tab', 1, 5);">Informaci&oacute;n General</a></li>
-            <li id="li2" onclick="currentTab('tab', this);"><a href="#" onclick="mostrarTab('tab', 2, 5);">Informaci&oacute;n Monetaria</a></li>
-            <li id="li3" onclick="currentTab('tab', this);"><a href="#" onclick="mostrarTab('tab', 3, 5);">Dist. Contable y Presup.</a></li>
+            <li id="li1" onclick="currentTab('tab', this);" class="current"><a href="#" onclick="mostrarTab('tab', 1, 6);">Informaci&oacute;n General</a></li>
+            <li id="li2" onclick="currentTab('tab', this);"><a href="#" onclick="mostrarTab('tab', 2, 6);">Informaci&oacute;n Monetaria</a></li>
+            <li id="li3" onclick="currentTab('tab', this);"><a href="#" onclick="mostrarTab('tab', 3, 6);">Dist. Contable y Presup.</a></li>
             <li id="li4" onclick="currentTab('tab', this);"><a href="#" onclick="<?=$mostrarTabDistribucion?>">Resumen Contable y Presup.</a></li>
-            <li id="li5" onclick="currentTab('tab', this);"><a href="#" onclick="mostrarTab('tab', 5, 5);">Registro de Facturas</a></li>
-            <!-- <li id="li5" onclick="currentTab('tab', this);"><a href="#" onclick="mostrarTab('tab', 5, 5);">Adelantos y Pagos Parciales</a></li> -->
+            <li id="li5" onclick="currentTab('tab', this);"><a href="#" onclick="mostrarTab('tab', 5, 6);">Registro de Facturas</a></li>
+            <li id="li6" onclick="currentTab('tab', this);"><a href="#" onclick="mostrarTab('tab', 6, 6);">Adelantos y Pagos Parciales</a></li>
             </ul>
             </div>
         </td>
@@ -790,6 +885,7 @@ $_width = 1100;
 <input type="hidden" name="CodObra" id="CodObra" value="<?=$field_obligacion['CodObra']?>" />
 <input type="hidden" name="CodValuacion" id="CodValuacion" value="<?=$field_obligacion['CodValuacion']?>" />
 <input type="hidden" name="CodViatico" id="CodViatico" value="<?=$CodViatico?>" />
+<input type="hidden" name="CodAdelanto" id="CodAdelanto" value="<?=$CodAdelanto?>" />
 
 <div id="tab1" style="display:block;">
 	<table width="1100" class="tblForm">
@@ -1018,7 +1114,7 @@ $_width = 1100;
 	    <tr>
 			<td class="tagForm">* Cuenta Bancaria:</td>
 			<td>
-	        	<select id="Nr, oCuenta" style="width:200px;" <?=$disabled_ver?>>
+	        	<select id="NroCuenta" style="width:200px;" <?=$disabled_ver?>>
 	                <?=loadSelect2("ap_ctabancaria", "NroCuenta", "NroCuenta", $field_obligacion['NroCuenta'], 0, [], [], 'Descripcion')?>
 	            </select>
 	        </td>
@@ -1591,6 +1687,33 @@ $_width = 1100;
 									vd.CodOrganismo = '$CodOrganismo' AND
 									vd.CodViatico = '$CodViatico'";
 					}
+					elseif ($opcion == "adelanto-generar") {
+						$sql = "SELECT
+									(ga.MontoAfecto + ga.MontoNoAfecto) AS Monto,
+									td.CodCuentaAde AS CodCuenta,
+									td.CodCuentaAdePub20 AS CodCuentaPub20,
+									'' AS cod_partida,
+									ga.Descripcion,
+									'' AS CodPresupuesto,
+									'' AS CodFuente,
+									'' AS NomPartida,
+									pc.Descripcion AS NomCuenta,
+									pc20.Descripcion As NomCuentaPub20,
+		                            '' AS CategoriaProg,
+		                            SUBSTRING(ga.Periodo, 1, 4) AS Ejercicio,
+		                            ga.CodCentroCosto,
+		                            ga.CodProveedor AS CodPersona,
+		                            ga.CodClasificacion AS TipoOrden,
+		                            ga.NroAdelanto AS NroOrden,
+		                            CONCAT(ga.CodClasificacion, '-', ga.NroAdelanto) AS Referencia
+								FROM ap_gastoadelanto ga
+								INNER JOIN ap_tipodocumento td ON (
+									td.CodTipoDocumento = (CASE WHEN ga.CodClasificacion = 'AP' THEN 'APR' ELSE 'ACO' END)
+								)
+								LEFT JOIN ac_mastplancuenta pc ON pc.CodCuenta = td.CodCuentaAde
+								LEFT JOIN ac_mastplancuenta20 pc20 ON pc20.CodCuenta = td.CodCuentaAdePub20
+								WHERE ga.CodAdelanto = '$CodAdelanto'";
+					}
 					else {
 		                $sql = "SELECT 
 		                            oc.*,
@@ -2017,6 +2140,90 @@ $_width = 1100;
 	</form>
 </div>
 
+<div id="tab6" style="display:none;">
+	<form name="frmadelantos" id="frmadelantos" method="POST">
+		<input type="hidden" id="sel_adelantos" />
+		<table width="<?=$_width?>" class="tblBotones">
+			<thead>
+				<tr>
+					<th class="divFormCaption" colspan="2">Adelantos aplicados contra la Obligación</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td align="right" class="gallery clearfix">
+						<a id="a_adelantos" href="../lib/listas/gehen.php?anz=lista_ap_gastoadelanto&filtrar=default&ventana=obligacion_adelanto&detalle=adelantos&modulo=ajax&accion=adelantos_insertar&url=../../ap/ap_obligacion_ajax.php&iframe=true&width=100%&height=100%" rel="prettyPhoto[iframe15]" style="display:none;"></a>
+						<input type="button" class="btLista" value="Insertar" onclick="abrirListaAdelanto();" <?=$disabled_ver?> />
+						<input type="button" class="btLista" value="Borrar" onclick="quitar(this, 'adelantos');" <?=$disabled_ver?> />
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<div style="overflow:scroll; width:<?=$_width?>px; height:250px; margin:auto;">
+			<table class="tblLista" style="width:100%; min-width:1250px;">
+				<thead>
+					<tr>
+						<th width="20">#</th>
+						<th width="100">Fecha</th>
+						<th width="100">Persona #</th>
+						<th width="100">Tipo</th>
+						<th width="100">Adelanto #</th>
+						<th width="150" align="right">Monto</th>
+						<th>Descripción</th>
+					</tr>
+				</thead>
+				
+				<tbody id="lista_adelantos">
+					<?php
+					$nro_adelantos = 0;
+					foreach ($field_adelantos as $f) {
+						$id = ++$nro_adelantos;
+						?>
+						<tr class="trListaBody" onclick="clk($(this), 'adelantos', 'adelantos_<?=$id?>');" id="adelantos_<?=$id?>">
+							<th>
+								<?=$nro_adelantos?>
+							</th>
+							<td>
+								<input type="text" name="adelantos_NroControl[]" value="<?=$f['NroControl']?>" style="text-align:center;" class="cell" maxlength="20">
+							</td>
+							<td>
+								<input type="text" name="adelantos_NroFactura[]" value="<?=$f['NroFactura']?>" style="text-align:center;" class="cell" maxlength="20">
+							</td>
+							<td>
+								<input type="text" name="adelantos_MontoAfecto[]" id="adelantos_MontoAfecto<?=$id?>" value="<?=number_format($f['MontoAfecto'],2,',','.')?>" style="text-align:right;" class="cell currency" onchange="getMontoImpuesto('<?=$id?>');">
+							</td>
+							<td>
+								<input type="text" name="adelantos_MontoNoAfecto[]" id="adelantos_MontoNoAfecto<?=$id?>" value="<?=number_format($f['MontoNoAfecto'],2,',','.')?>" style="text-align:right;" class="cell currency" onchange="getMontoImpuesto('<?=$id?>');">
+							</td>
+							<td>
+								<input type="text" name="adelantos_MontoImpuesto[]" id="adelantos_MontoImpuesto<?=$id?>" value="<?=number_format($f['MontoImpuesto'],2,',','.')?>" style="text-align:right;" class="cell currency" onchange="setMontoImpuesto('<?=$id?>');">
+							</td>
+							<td>
+								<input type="text" name="adelantos_MontoFactura[]" id="adelantos_MontoFactura<?=$id?>" value="<?=number_format($f['MontoFactura'],2,',','.')?>" style="text-align:right;" class="cell currency" readonly>
+							</td>
+							<td>
+                                <select name="adelantos_CodImpuesto[]" id="adelantos_CodImpuesto<?=$id?>" class="cell" onchange="getMontoRetencion(this.value, '<?=$id?>');">
+                                	<?=loadSelect2('mastimpuestos','CodImpuesto','Descripcion',$f['CodImpuesto'])?>
+                                </select>
+							</td>
+							<td>
+								<input type="text" name="adelantos_FactorPorcentaje[]" id="adelantos_FactorPorcentaje<?=$id?>" value="<?=number_format($f['FactorPorcentaje'],2,',','.')?>" style="text-align:right;" class="cell currency" readonly>
+							</td>
+							<td>
+								<input type="text" name="adelantos_MontoRetenido[]" id="adelantos_MontoRetenido<?=$id?>" value="<?=number_format($f['MontoRetenido'],2,',','.')?>" style="text-align:right;" class="cell currency">
+							</td>
+						</tr>
+						<?php
+					}
+					?>
+				</tbody>
+			</table>
+		</div>
+		<input type="hidden" id="nro_adelantos" value="<?=$nro_adelantos?>" />
+		<input type="hidden" id="can_adelantos" value="<?=$nro_adelantos?>" />
+	</form>
+</div>
+
 <script type="text/javascript" charset="utf-8">
 	//	valido si el tipo de servioio es afecto a impuesto o no
 	function afectaTipoServicioObligacion(CodTipoServicio) {
@@ -2079,6 +2286,7 @@ $_width = 1100;
 			$("#lista_documento").html("");
 			$("#lista_distribucion").html("");
 			$("#lista_impuesto").html("");
+			$("#lista_adelantos").html("");
 			//	si selecciono pago directo
 			if (boo) {
 				$("#btInsertarDocumento").attr("disabled", "disabled");
@@ -2262,6 +2470,26 @@ $_width = 1100;
 		var MontoFactura = MontoAfecto + MontoNoAfecto + MontoImpuesto;
 		$('#facturas_MontoFactura'+id).val(MontoFactura).formatCurrency();
 		getMontoRetencion($('#facturas_CodImpuesto'+id).val(), id);
+	}
+	//	
+	function abrirListaAdelanto() {
+		var CodProveedor = $('#CodProveedor').val();
+		if (CodProveedor == '') {
+			cajaModal('¡Debe seleccionar el proveedor!');
+		} else {
+			var href = "../lib/listas/gehen.php?anz=lista_ap_gastoadelanto&filtrar=default&fCodProveedor="+CodProveedor+"&ventana=obligacion_adelanto&detalle=adelantos&modulo=ajax&accion=adelantos_insertar&url=../../ap/ap_obligacion_ajax.php&iframe=true&width=100%&height=100%";
+			$('#a_adelantos').attr('href', href);
+			$('#a_adelantos').click();
+		}
+	}
+	//	
+	function setMontoAdelantos() {
+		$('input[name="adelantos_CodAdelanto[]"]').each(function(idx) {
+			var adelantos_MontoTotal = new Number($('input[name="adelantos_MontoTotal[]"]:eq('+idx+')').val());
+			MontoAdelanto += adelantos_MontoTotal;
+		});
+		$('#MontoAdelanto').val(MontoAdelanto).formatCurrency();
+		actualizarMontosObligacion();
 	}
 	//	
 	$(document).ready(function() {

@@ -848,6 +848,19 @@ elseif ($modulo == "orden_pago") {
 						NroCuenta = '".$NroCuenta."' AND
 						CodTipoPago = '".$CodTipoPago."'";
 			execute($sql);
+			##	delanto de proveedores
+			if ($field_op['CodTipoDocumento'] == 'APR') {
+				$sql = "UPDATE ap_gastoadelanto
+						SET Estado = 'PA'
+						WHERE
+							CodProveedor = '$field_op[CodProveedor]'
+							AND ObligacionTipoDocumento = '$field_op[CodTipoDocumento]'
+							AND ObligacionNroDocumento = '$field_op[NroDocumento]'
+							AND Estado = 'GE'";
+				execute($sql);
+				##	actualizo
+				
+			}
 		}
 		//	consulto e inserto las retenciones
 		$sql = "SELECT

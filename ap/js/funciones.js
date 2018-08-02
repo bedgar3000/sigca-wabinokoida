@@ -120,15 +120,21 @@ function actualizarMontosObligacion() {
 		}
 	}
 	
+	//	adelantos
+	var MontoAdelanto = 0;
+	$('input[name="adelantos_CodAdelanto[]"]').each(function(idx) {
+		var adelantos_MontoTotal = new Number($('input[name="adelantos_MontoTotal[]"]:eq('+idx+')').val());
+		MontoAdelanto += adelantos_MontoTotal;
+	});
+	
 	//	calculo montos
 	var FactorImpuesto = new Number($("#FactorImpuesto").val());
 	var documento_impuesto = new Number(documento_afecto * FactorImpuesto / 100);
 	var documento_total = new Number(documento_afecto + documento_noafecto + documento_impuesto);
 	var MontoImpuesto = new Number(MontoAfecto * FactorImpuesto / 100);
 	var MontoObligacion = new Number(MontoAfecto + MontoNoAfecto + MontoImpuesto + impuesto_total);
-	var MontoAdelanto = new Number(0);
 	var MontoPagar = new Number(MontoObligacion - MontoAdelanto);
-	var MontoPagoParcial = new Number(0);
+	var MontoPagoParcial = new Number(setNumero($('#MontoPagoParcial').val()));
 	var MontoPendiente = new Number(MontoPagar - MontoPagoParcial);
 	
 	//	asigno montos a la lista
@@ -145,7 +151,7 @@ function actualizarMontosObligacion() {
 	$("#MontoImpuesto").val(setNumeroFormato(MontoImpuesto, 2, ".", ","));
 	$("#MontoImpuestoOtros").val(setNumeroFormato(impuesto_total, 2, ".", ","));
 	$("#MontoObligacion").val(setNumeroFormato(MontoObligacion, 2, ".", ","));
-	$("#MontoAdelanto").val(setNumeroFormato(MontoAdelanto, 2, ".", ","));
+	$('#MontoAdelanto').val(MontoAdelanto).formatCurrency();
 	$("#MontoPagar").val(setNumeroFormato(MontoPagar, 2, ".", ","));
 	$("#MontoPagoParcial").val(setNumeroFormato(MontoPagoParcial, 2, ".", ","));
 	$("#MontoPendiente").val(setNumeroFormato(MontoPendiente, 2, ".", ","));

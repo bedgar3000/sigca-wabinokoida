@@ -509,6 +509,20 @@ function printValoresGeneral($tabla, $codigo) {
 			$c[] = "AN"; $v[] = "Anulado";
 			$c[] = "CT"; $v[] = "Castigado";
 			break;
+			
+		case "adelanto-estado":
+			$c[] = "PR"; $v[] = "En Preparación";
+			$c[] = "AP"; $v[] = "Aprobado";
+			$c[] = "GE"; $v[] = "Generado";
+			$c[] = "PA"; $v[] = "Pagado";
+			$c[] = "AC"; $v[] = "Aplicado";
+			$c[] = "AN"; $v[] = "Anulado";
+			break;
+			
+		case "adelanto-tipo":
+			$c[] = "P"; $v[] = "Proveedor";
+			$c[] = "C"; $v[] = "Contratista";
+			break;
 	}
 
 	$i=0;

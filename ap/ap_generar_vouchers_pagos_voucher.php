@@ -276,7 +276,7 @@ if (mysql_num_rows($query_prefpa) != 0) $field_prefpa = mysql_fetch_array($query
 						if (mysql_num_rows($query_impuesto2) != 0) $field_impuesto2 = mysql_fetch_array($query_impuesto2);
 					} else $field_impuesto2['Monto'] = 0.00;
 					
-					if ($fo['FlagProvision'] == "S")
+					if ($fo['FlagProvision'] == "S") {
 						$sql = "(SELECT
 									cb.CodCuenta,
 									o.ReferenciaTipoDocumento AS TipoOrden,
@@ -341,13 +341,14 @@ if (mysql_num_rows($query_prefpa) != 0) $field_prefpa = mysql_fetch_array($query
 									o.NroDocumento = '".$fo['NroDocumento']."'
 								 GROUP BY CodCuenta)
 								ORDER BY Columna DESC, Orden, CodCuenta";
+					}
 					else {
 						$sql = "(SELECT
 									cb.CodCuenta,
 									o.ReferenciaTipoDocumento AS TipoOrden,
 									o.ReferenciaNroDocumento AS NroOrden,
 									pc.Descripcion AS NomCuenta,
-									(o.MontoObligacion) AS MontoVoucher,
+									(o.MontoAfecto + o.MontoNoAfecto) AS MontoVoucher,
 									pc.TipoSaldo,
 	                                pc.FlagReqCC,
 									'01' AS Orden,

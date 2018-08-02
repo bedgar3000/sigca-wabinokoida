@@ -817,6 +817,20 @@ function loadSelectGeneral($tabla, $codigo, $opt=0) {
 			$c[] = "AN"; $v[] = "Anulado";
 			$c[] = "CT"; $v[] = "Castigado";
 			break;
+			
+		case "adelanto-estado":
+			$c[] = "PR"; $v[] = "En Preparación";
+			$c[] = "AP"; $v[] = "Aprobado";
+			$c[] = "GE"; $v[] = "Generado";
+			$c[] = "PA"; $v[] = "Pagado";
+			$c[] = "AC"; $v[] = "Aplicado";
+			$c[] = "AN"; $v[] = "Anulado";
+			break;
+			
+		case "adelanto-tipo":
+			$c[] = "P"; $v[] = "Proveedor";
+			$c[] = "C"; $v[] = "Contratista";
+			break;
 	}
 	
 	$i = 0;
@@ -2335,6 +2349,29 @@ function tipos_pago_tarjeta($CodTipoPago = NULL, $opt = 0) {
 	{
 		if ($row['CodTipoPago'] == $CodTipoPago) $options .= '<option value="'.$row['CodTipoPago'].'" selected>'.$row['Descripcion'].'</option>';
 		else $options .= '<option value="'.$row['CodTipoPago'].'">'.$row['Descripcion'].'</option>';
+	}
+
+	return $options;
+}
+
+function clasificacion_adelanto($CodClasificacion = NULL, $opt = 0) {
+	$filtro = '';
+	if ($opt)
+	{
+		$filtro .= " AND CodClasificacion = '$CodClasificacion'";
+	}
+	$sql = "SELECT *
+			FROM ap_clasificaciongastos
+			WHERE
+				(CodClasificacion = 'AP' OR CodClasificacion = 'AC')
+				$filtro";
+	$field = getRecords($sql);
+
+	$options = '';
+	foreach ($field as $row)
+	{
+		if ($row['CodClasificacion'] == $CodClasificacion) $options .= '<option value="'.$row['CodClasificacion'].'" selected>'.$row['Descripcion'].'</option>';
+		else $options .= '<option value="'.$row['CodClasificacion'].'">'.$row['Descripcion'].'</option>';
 	}
 
 	return $options;

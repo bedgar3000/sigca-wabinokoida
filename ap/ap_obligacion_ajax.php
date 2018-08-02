@@ -547,6 +547,18 @@ if ($modulo == "obligacion") {
 					WHERE CodValuacion = '$CodValuacion'";
 			execute($sql);
 		}
+		//	adelanto de proveedores
+		elseif ($opcion == 'adelanto-generar') {
+			$sql = "UPDATE ap_gastoadelanto
+					SET
+						ObligacionTipoDocumento = '$CodTipoDocumento',
+						ObligacionNroDocumento = '$NroDocumento',
+						Estado = 'GE',
+						UltimoUsuario = '$_SESSION[USUARIO_ACTUAL]',
+						UltimaFecha = NOW()
+					WHERE CodAdelanto = '$CodAdelanto'";
+			execute($sql);
+		}
 		//--------------------
 		mysql_query("COMMIT");
 	}
@@ -2545,6 +2557,31 @@ elseif ($modulo == "ajax") {
 		];
         echo json_encode($jsondata);
         exit();
+	}
+	//	insertar linea en adelantos
+	elseif ($accion == "adelantos_insertar") {
+		$id = ++$nro_detalle;
+		$sql = "SELECT * FROM ap_gastoadelanto WHERE CodAdelanto = '$CodAdelanto'";
+		$field = getRecords($sql);
+		foreach ($field as $f) {
+			?>
+			<tr class="trListaBody" onclick="clk($(this), 'adelantos', 'adelantos_<?=$id?>');" id="adelantos_<?=$id?>">
+				<th>
+					<input type="hidden" name="adelantos_CodAdelanto[]" value="<?=$f['CodAdelanto']?>">
+					<input type="hidden" name="adelantos_MontoTotal[]" value="<?=$f['MontoTotal']?>">
+					<?=$nro_detalle?>
+				</th>
+				<td align="center"><?=formatFechaDMA($f['FechaDocumento'])?></td>
+				<td align="center"><?=$f['CodProveedor']?></td>
+				<td align="center"><?=printValores('adelanto-tipo',$f['TipoAdelanto'])?></td>
+				<td align="center"><?=$f['NroAdelanto']?></td>
+				<td align="right">
+					<strong><?=number_format($f['MontoTotal'],2,',','.')?></strong>
+				</td>
+				<td><?=$f['Descripcion']?></td>
+			</tr>
+			<?php
+		}
 	}
 }
 ?>

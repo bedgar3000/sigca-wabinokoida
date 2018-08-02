@@ -1,14 +1,16 @@
 <?php
 if ($opcion == "nuevo") {
 	$field['Estado'] = 'PR';
-	$field['CodCentroCosto'] = $_PARAMETRO['COCCOSTO'];
-	$field['CentroCosto'] = getVar3("SELECT Codigo FROM ac_mastcentrocosto WHERE CodCentroCosto = '$_PARAMETRO[COCCOSTO]'");
+	$field['CodCentroCosto'] = $_PARAMETRO['CCOSTOCXP'];
+	$field['CentroCosto'] = getVar3("SELECT Codigo FROM ac_mastcentrocosto WHERE CodCentroCosto = '$_PARAMETRO[CCOSTOCXP]'");
 	$field['FechaDocumento'] = $FechaActual;
 	$field['FechaEsperadaPago'] = $FechaActual;
 	$field['FechaPago'] = $FechaActual;
 	$field['PreparadoPor'] = $_SESSION["CODPERSONA_ACTUAL"];
 	$field['NomPreparadoPor'] = $_SESSION["NOMBRE_USUARIO_ACTUAL"];
 	$field['FechaPreparado'] = $Ahora;
+	$field['CodClasificacion'] = 'AP';
+	$field['TipoAdelanto'] = 'P';
 	$field['CodTipoServicio'] = 'SOIVA';
 	$sql = "SELECT i.FactorPorcentaje
 			FROM masttiposervicioimpuesto tsi
@@ -36,7 +38,7 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "aprobar" || $o
 				ga.*,
 				cc.Codigo AS CentroCosto,
 				p1.NomCompleto AS NomProveedor,
-				p2.NomCompleto AS NomPagarA,
+				-- p2.NomCompleto AS NomPagarA,
 				p3.NomCompleto AS NomPreparadoPor,
 				p4.NomCompleto AS NomAprobadoPor,
 				i.FactorPorcentaje
@@ -160,7 +162,7 @@ else $action = "gehen.php?anz=ap_gastoadelanto_lista";
 	    <tr>
 			<td class="tagForm" width="150">* Organismo:</td>
 			<td>
-				<select name="CodOrganismo" id="CodOrganismo" style="width:275px;" <?=$disabled_modificar?>>
+				<select name="CodOrganismo" id="CodOrganismo" style="width:325px;" <?=$disabled_modificar?>>
 					<?=getOrganismos($field['CodOrganismo'], 3)?>
 				</select>
 			</td>
@@ -174,8 +176,8 @@ else $action = "gehen.php?anz=ap_gastoadelanto_lista";
 			<td class="gallery clearfix">
 				<input type="hidden" name="DocFiscalProveedor" id="DocFiscalProveedor" value="<?=$field['DocFiscalProveedor']?>">
 				<input type="text" name="CodProveedor" id="CodProveedor" value="<?=$field['CodProveedor']?>" style="width:66px;" readonly />
-				<input type="text" name="NomProveedor" id="NomProveedor" value="<?=htmlentities($field['NomProveedor'])?>" style="width:205px;" readonly />
-				<a href="../lib/listas/gehen.php?anz=lista_personas&campo1=CodProveedor&campo2=NomProveedor&campo3=DocFiscalProveedor&campo4=CodPagarA&campo5=NomPagarA&campo6=DocFiscalPagarA&ventana=pagara&filtrar=default&FlagClasePersona=S&fEsProveedor=S&fEsOtros=S&concepto=07-0001&_APLICACION=<?=$_APLICACION?>&iframe=true&width=100%&height=100%" rel="prettyPhoto[iframe1]" style=" <?=$display_modificar?>">
+				<input type="text" name="NomProveedor" id="NomProveedor" value="<?=htmlentities($field['NomProveedor'])?>" style="width:255px;" readonly />
+				<a href="../lib/listas/gehen.php?anz=lista_personas&campo1=CodProveedor&campo2=NomProveedor&campo3=DocFiscalProveedor&campo4=CodPagarA&campo5=NomPagarA&campo6=DocFiscalPagarA&campo7=CodTipoPago&campo8=CodTipoServicio&ventana=selListaGastoAdelanto&filtrar=default&FlagClasePersona=S&fEsProveedor=S&fEsOtros=S&concepto=07-0001&_APLICACION=<?=$_APLICACION?>&iframe=true&width=100%&height=100%" rel="prettyPhoto[iframe1]" style=" <?=$display_modificar?>">
 	            	<img src="../imagenes/f_boton.png" width="20" title="Seleccionar" align="absbottom" style="cursor:pointer;" />
 	            </a>
 			</td>
@@ -190,7 +192,7 @@ else $action = "gehen.php?anz=ap_gastoadelanto_lista";
 			<td class="gallery clearfix">
 				<input type="hidden" name="DocFiscalPagarA" id="DocFiscalPagarA" value="<?=$field['DocFiscalPagarA']?>">
 				<input type="text" name="CodPagarA" id="CodPagarA" value="<?=$field['CodPagarA']?>" style="width:66px;" readonly />
-				<input type="text" name="NomPagarA" id="NomPagarA" value="<?=htmlentities($field['NomPagarA'])?>" style="width:205px;" readonly />
+				<input type="text" name="NomPagarA" id="NomPagarA" value="<?=htmlentities($field['NomPagarA'])?>" style="width:255px;" readonly />
 				<a href="../lib/listas/gehen.php?anz=lista_personas&campo1=CodPagarA&campo2=NomPagarA&campo3=DocFiscalPagarA&ventana=filtro&filtrar=default&FlagClasePersona=S&fEsProveedor=S&fEsOtros=S&concepto=07-0001&_APLICACION=<?=$_APLICACION?>&iframe=true&width=100%&height=100%" rel="prettyPhoto[iframe2]" style=" <?=$display_modificar?>">
 	            	<img src="../imagenes/f_boton.png" width="20" title="Seleccionar" align="absbottom" style="cursor:pointer;" />
 	            </a>
@@ -203,9 +205,9 @@ else $action = "gehen.php?anz=ap_gastoadelanto_lista";
 	    <tr>
 			<td class="tagForm">* Clasificación:</td>
 			<td>
-				<select name="CodClasificacion" id="CodClasificacion" style="width:275px;" <?=$disabled_ver?>>
+				<select name="CodClasificacion" id="CodClasificacion" style="width:325px;" <?=$disabled_ver?>>
 					<option value="">&nbsp;</option>
-					<?=loadSelect2('ap_clasificaciongastos','CodClasificacion','Descripcion',$field['CodClasificacion'])?>
+					<?=clasificacion_adelanto($field['CodClasificacion'])?>
 				</select>
 			</td>
 			<td class="tagForm">* Fecha Pago:</td>
@@ -216,7 +218,7 @@ else $action = "gehen.php?anz=ap_gastoadelanto_lista";
 	    <tr>
 			<td class="tagForm">* Tipo de Adelanto:</td>
 			<td>
-				<select name="TipoAdelanto" id="TipoAdelanto" style="width:275px;" <?=$disabled_ver?>>
+				<select name="TipoAdelanto" id="TipoAdelanto" style="width:325px;" <?=$disabled_ver?>>
 					<option value="">&nbsp;</option>
 					<?=loadSelectValores("adelanto-tipo", $field['TipoAdelanto'])?>
 				</select>
@@ -238,7 +240,7 @@ else $action = "gehen.php?anz=ap_gastoadelanto_lista";
 		<tr>
 			<td class="tagForm" rowspan="3">Descripción:</td>
 			<td rowspan="3">
-				<textarea name="Descripcion" id="Descripcion" style="width:275px;" rows="3" <?=$disabled_ver?>><?=htmlentities($field['Descripcion'])?></textarea>
+				<textarea name="Descripcion" id="Descripcion" style="width:325px;" rows="3" <?=$disabled_ver?>><?=htmlentities($field['Descripcion'])?></textarea>
 			</td>
 			<td class="tagForm">Oblig. Rel.:</td>
 			<td>
@@ -356,7 +358,7 @@ else $action = "gehen.php?anz=ap_gastoadelanto_lista";
 			<td class="tagForm">Impuesto a las Ventas:</td>
 			<td>
 				<input type="hidden" name="FactorPorcentaje" id="FactorPorcentaje" value="<?=$field['FactorPorcentaje']?>">
-				<input type="text" name="MontoImpuestoVentas" id="MontoImpuestoVentas" value="<?=number_format($field['MontoImpuestoVentas'],2,',','.')?>" style="width:125px; text-align: right;" class="currency" readonly />
+				<input type="text" name="MontoImpuestoVentas" id="MontoImpuestoVentas" value="<?=number_format($field['MontoImpuestoVentas'],2,',','.')?>" style="width:125px; text-align: right;" class="currency" onchange="setTotales(1);" <?=$disabled_ver?> />
 			</td>
 		</tr>
 		<tr>
@@ -444,11 +446,12 @@ else $action = "gehen.php?anz=ap_gastoadelanto_lista";
 	    }, 'json');
 
 	}
-	function setTotales() {
+	function setTotales(FlagImpuesto) {
 		var FactorPorcentaje = $('#FactorPorcentaje').val();
 		var MontoAfecto = setNumero($('#MontoAfecto').val());
 		var MontoNoAfecto = setNumero($('#MontoNoAfecto').val());
-		var MontoImpuestoVentas = MontoAfecto * FactorPorcentaje / 100;
+		if (FlagImpuesto) var MontoImpuestoVentas = setNumero($('#MontoImpuestoVentas').val());
+		else var MontoImpuestoVentas = MontoAfecto * FactorPorcentaje / 100;
 		var MontoRetenciones = 0;
 		//	retenciones
 		$('input[name="retencion_Secuencia[]"]').each(function(idx) {

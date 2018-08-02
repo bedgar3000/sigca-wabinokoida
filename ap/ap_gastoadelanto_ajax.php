@@ -39,6 +39,7 @@ if ($modulo == "formulario") {
 					CodTipoPago = '$CodTipoPago',
 					CodProveedor = '$CodProveedor',
 					CodPagarA = '$CodPagarA',
+					NomPagarA = '$NomPagarA',
 					TipoAdelanto = '$TipoAdelanto',
 					$iTipoCompromiso
 					$iNroCompromiso
@@ -177,25 +178,6 @@ if ($modulo == "formulario") {
 	}
 	//	aprobar
 	elseif ($accion == "aprobar") {
-		mysql_query("BEGIN");
-		##	-----------------
-		$CodTipoDocumento = $_PARAMETRO['TIPODOCAP'];
-		##	
-		$sql = "SELECT
-					ga.*,
-					cbd.NroCuenta,
-					td.CodCuentaAde,
-					td.CodCuentaAdePub20
-				FROM ap_gastoadelanto ga
-				LEFT JOIN ap_ctabancariadefault cbd ON (
-					cbd.CodOrganismo = ga.CodOrganismo
-					AND cbd.CodTipoPago = ga.CodTipoPago
-				)
-				LEFT JOIN ap_tipodocumento td ON td.CodTipoDocumento = '$CodTipoDocumento'
-				WHERE ga.CodAdelanto = '$CodAdelanto'";
-		$field = getRecord($sql);
-		##	
-		if (empty($field['NroCuenta'])) die('No se encontró una cuenta por defecto para la obligación');
 		##	actualizo
 		$sql = "UPDATE ap_gastoadelanto
 				SET
@@ -206,11 +188,45 @@ if ($modulo == "formulario") {
 					UltimaFecha = NOW()
 				WHERE CodAdelanto = '$CodAdelanto'";
 		execute($sql);
+	}
+	//	generar
+	elseif ($accion == "generar") {
+		mysql_query("BEGIN");
+		##	-----------------
+		$sql = "SELECT
+					ga.*,
+					cbd.NroCuenta
+				FROM ap_gastoadelanto ga
+				LEFT JOIN ap_ctabancariadefault cbd ON (
+					cbd.CodOrganismo = ga.CodOrganismo
+					AND cbd.CodTipoPago = ga.CodTipoPago
+				)
+				WHERE ga.CodAdelanto = '$CodAdelanto'";
+		$field = getRecord($sql);
+		if ($field['CodClasificacion'] == 'AP') $CodTipoDocumento = 'APR';
+		elseif ($field['CodClasificacion'] == 'AC') $CodTipoDocumento = 'ACO';
+		else $CodTipoDocumento = $_PARAMETRO['TIPODOCAP'];
+		##	
+		$sql = "SELECT * FROM ap_tipodocumento WHERE CodTipoDocumento = '$CodTipoDocumento'";
+		$field_tp = getRecord($sql);
+		##	valido
+		if (empty($field['NroCuenta'])) die('No se encontró una cuenta bancaria asociada al organismo por defecto para la obligación');
+		##	actualizo
+		$sql = "UPDATE ap_gastoadelanto
+				SET
+					GeneradoPor = '$GeneradoPor',
+					FechaGenerado = '$FechaGenerado',
+					Estado = 'GE',
+					UltimoUsuario = '$_SESSION[USUARIO_ACTUAL]',
+					UltimaFecha = NOW()
+				WHERE CodAdelanto = '$CodAdelanto'";
+		execute($sql);
 		##	obligación
 		$NroRegistro = codigo('ap_obligaciones','NroRegistro',6,['CodOrganismo'],[$CodOrganismo]);
 		$NroDocumento = codigo('ap_obligaciones','NroDocumento',10,['CodProveedor','CodTipoDocumento'],[$CodProveedor,$CodTipoDocumento]);
 		$NroControl = $CodTipoDocumento . $field['NroAdelanto'] . $field['Anio'];
 		##	
+		$MontoObligacion = $field['MontoAfecto'] + $field['MontoNoAfecto'];
 		$sql = "INSERT INTO ap_obligaciones
 				SET
 					CodProveedor = '$field[CodProveedor]',
@@ -225,12 +241,12 @@ if ($modulo == "formulario") {
 					CodTipoServicio = '$field[CodTipoServicio]',
 					ReferenciaTipoDocumento = '$CodTipoDocumento',
 					ReferenciaNroDocumento = '$NroControl',
-					MontoObligacion = '$field[SaldoAdelanto]',
-					MontoImpuestoOtros = '$field[MontoRetenciones]',
+					MontoObligacion = '$MontoObligacion',
+					MontoImpuestoOtros = 0.00,
 					MontoNoAfecto = '$field[MontoNoAfecto]',
 					MontoAfecto = '$field[MontoAfecto]',
 					MontoAdelanto = 0.00,
-					MontoImpuesto = '$field[MontoImpuestoVentas]',
+					MontoImpuesto = 0.00,
 					MontoPagoParcial = 0.00,
 					NroRegistro = '$NroRegistro',
 					Comentarios = '$field[Descripcion]',
@@ -274,8 +290,8 @@ if ($modulo == "formulario") {
 					Descripcion = '$field[Descripcion]',
 					Monto = '$MontoBruto',
 					CodCentroCosto = '$field[CodCentroCosto]',
-					CodCuenta = '$field[CodCuentaAde]',
-					CodCuentaPub20 = '$field[CodCuentaAdePub20]',
+					CodCuenta = '$field_tp[CodCuentaAde]',
+					CodCuentaPub20 = '$field_tp[CodCuentaAdePub20]',
 					FlagNoAfectoIGV = 'S',
 					Referencia = '$NroControl',
 					CodPersona = '$field[CodProveedor]',
@@ -283,6 +299,15 @@ if ($modulo == "formulario") {
 					Ejercicio = '$field[Anio]',
 					UltimoUsuario = '$_SESSION[USUARIO_ACTUAL]',
 					UltimaFecha = NOW()";
+		execute($sql);
+		##	actualizo
+		$sql = "UPDATE ap_gastoadelanto
+				SET
+					ObligacionTipoDocumento = '$CodTipoDocumento',
+					ObligacionNroDocumento = '$NroDocumento',
+					UltimoUsuario = '$_SESSION[USUARIO_ACTUAL]',
+					UltimaFecha = NOW()
+				WHERE CodAdelanto = '$CodAdelanto'";
 		execute($sql);
 		##	-----------------
 		mysql_query("COMMIT");

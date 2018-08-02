@@ -193,6 +193,9 @@ if (!empty($_APLICACION))
 						AND md1.CodMaestro = 'FORMAFACT'
 					)
 					LEFT JOIN co_vendedor v ON v.CodPersona = p.CodPersona
+					LEFT JOIN co_rutadespacho rd ON rd.CodRutaDespacho = cl.CodRutaDespacho
+					LEFT JOIN mastparroquias pr ON pr.CodParroquia = rd.CodParroquia
+					LEFT JOIN mastproveedores po ON po.CodProveedor = p.CodPersona
 				WHERE 1 $filtro";
 		$rows_total = getNumRows3($sql);
 		//	consulto lista
@@ -215,7 +218,9 @@ if (!empty($_APLICACION))
 					'' AS Comunidad,
 					rd.CodParroquia,
 					pr.Descripcion AS Parroquia,
-					v.CodPersona AS CodPersonaVendedor
+					v.CodPersona AS CodPersonaVendedor,
+					po.CodTipoPago,
+					po.CodTipoServicio
 				FROM
 					mastpersonas p
 					LEFT JOIN mastempleado em On (em.CodPersona = p.CodPersona)
@@ -231,6 +236,7 @@ if (!empty($_APLICACION))
 					LEFT JOIN co_vendedor v ON v.CodPersona = p.CodPersona
 					LEFT JOIN co_rutadespacho rd ON rd.CodRutaDespacho = cl.CodRutaDespacho
 					LEFT JOIN mastparroquias pr ON pr.CodParroquia = rd.CodParroquia
+					LEFT JOIN mastproveedores po ON po.CodProveedor = p.CodPersona
 				WHERE 1 $filtro
 				ORDER BY $fOrderBy
 				LIMIT ".intval($limit).", ".intval($maxlimit);
@@ -308,6 +314,10 @@ if (!empty($_APLICACION))
 			elseif ($ventana == 'pagara') 
 			{
 				?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>','<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>']);"><?php
+			}
+			elseif ($ventana == 'selListaGastoAdelanto') 
+			{
+				?><tr class="trListaBody" onClick="selListaGastoAdelanto(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>','<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>','<?=$f['CodTipoPago']?>','<?=$f['CodTipoServicio']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>','<?=$campo7?>','<?=$campo8?>']);"><?php
 			}
 			elseif ($ventana == "selListadoOrdenCompraPersona") {
 				?><tr class="trListaBody" onclick="selListadoOrdenCompraPersona('<?=$f['CodPersona']?>');" id="<?=$f['CodPersona']?>"><?php 
@@ -401,6 +411,17 @@ if (!empty($_APLICACION))
 				parent.$('#CodPersonaVendedor').prop('disabled', true).val('');
 			}
 			selLista(valores, inputs);
+		}
+	<?php } elseif ($ventana == "selListaGastoAdelanto") { ?>
+		function selListaGastoAdelanto(valores, inputs) {
+			var CodTipoServicio = valores[7];
+			if (inputs) {
+				for(var i=0; i<inputs.length; i++) {
+					if (parent.$("#"+inputs[i]).length > 0) parent.$("#"+inputs[i]).val(valores[i]);
+				}
+			}
+			parent.setFactorPorcentaje(CodTipoServicio);
+			parent.$.prettyPhoto.close();
 		}
 	<?php } ?>
 </script>

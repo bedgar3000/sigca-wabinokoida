@@ -2,8 +2,10 @@
 //	------------------------------------
 if ($filtrar == "default") {
 	$fCodOrganismo = $_SESSION["FILTRO_ORGANISMO_ACTUAL"];
-	$fFechaDocumentoD = formatFechaDMA($PeriodoActual.'-01');
-	$fFechaDocumentoH = formatFechaDMA($FechaActual);
+	if ($lista == 'listar') {
+		$fFechaDocumentoD = formatFechaDMA($PeriodoActual.'-01');
+		$fFechaDocumentoH = formatFechaDMA($FechaActual);
+	}
 	$maxlimit = $_SESSION["MAXLIMIT"];
 	$fOrderBy = "FechaDocumento";
 }
@@ -13,6 +15,7 @@ if ($lista == "listar") {
 	$_btNuevo = "";
 	$_btModificar = "";
 	$_btAprobar = "display:none;";
+	$_btGenerar = "display:none;";
 	$_btAnular = "";
 }
 elseif ($lista == "aprobar") {
@@ -22,6 +25,17 @@ elseif ($lista == "aprobar") {
 	$_btNuevo = "display:none;";
 	$_btModificar = "display:none;";
 	$_btAprobar = "";
+	$_btGenerar = "display:none;";
+	$_btAnular = "";
+}
+elseif ($lista == "generar") {
+	$fEstado = "AP";
+	##	
+	$_titulo = "Lista de Adelantos / Generar Obligación";
+	$_btNuevo = "display:none;";
+	$_btModificar = "display:none;";
+	$_btAprobar = "display:none;";
+	$_btGenerar = "";
 	$_btAnular = "";
 }
 //	------------------------------------
@@ -146,6 +160,7 @@ $_width = 800;
 	            <input type="button" value="Nuevo" style="width:75px; <?=$_btNuevo?>" class="insert" onclick="cargarPagina(this.form, 'gehen.php?anz=ap_gastoadelanto_form&opcion=nuevo&origen=ap_gastoadelanto_lista');" />
             	<input type="button" value="Modificar" style="width:75px; <?=$_btModificar?>" class="update" onclick="cargarOpcionValidar3(this.form, $('#sel_registros').val(), 'ap_gastoadelanto_ajax.php', 'modulo=validar&accion=modificar', 'gehen.php?anz=ap_gastoadelanto_form&opcion=modificar', 'SELF', '');" />
 	            <input type="button" value="Aprobar" style="width:75px; <?=$_btAprobar?>" class="update" onclick="cargarOpcionValidar3(this.form, $('#sel_registros').val(), 'ap_gastoadelanto_ajax.php', 'modulo=validar&accion=aprobar', 'gehen.php?anz=ap_gastoadelanto_form&opcion=aprobar', 'SELF', '');" />
+	            <input type="button" value="Generar" style="width:75px; <?=$_btGenerar?>" class="update" onclick="cargarOpcionValidar3(this.form, $('#sel_registros').val(), 'ap_gastoadelanto_ajax.php', 'modulo=validar&accion=generar', 'gehen.php?anz=ap_obligacion_form&opcion=adelanto-generar&origen=ap_gastoadelanto_lista', 'SELF', '');" />
 	            <input type="button" value="Anular" style="width:75px; <?=$_btAnular?>" class="update" onclick="cargarOpcionValidar3(this.form, $('#sel_registros').val(), 'ap_gastoadelanto_ajax.php', 'modulo=validar&accion=anular', 'gehen.php?anz=ap_gastoadelanto_form&opcion=anular', 'SELF', '');" />
 	            <input type="button" value="Ver" style="width:75px;" class="ver" onclick="cargarOpcion2(this.form, 'gehen.php?anz=ap_gastoadelanto_form&opcion=ver', 'SELF', '', $('#sel_registros').val());" />
 	        </td>
