@@ -49,11 +49,6 @@ if ($modulo == "obligacion") {
 		if ($CodValuacion) $iCodValuacion = "CodValuacion = '".$CodValuacion."',"; else $iCodValuacion = "";
 		$NroRegistro = getCodigo_2("ap_obligaciones", "NroRegistro", "CodOrganismo", $CodOrganismo, 6);
 		$NroDocumento = codigo('ap_obligaciones','NroDocumento',10,['CodProveedor','CodTipoDocumento'],[$CodProveedor,$CodTipoDocumento]);
-		//$NroDocumento = codigo("ap_obligaciones", "NroDocumento", 10, ['CodProveedor','CodTipoDocumento'], [$CodProveedor,$CodTipoDocumento]);
-		/*$sql = "SELECT COUNT(*) FROM ap_obligaciones WHERE CodProveedor = '$CodProveedor' AND CodTipoDocumento = '$CodTipoDocumento'";
-		$count = getVar3($sql);
-		$NroDocumento = intval($count) + 1;
-		$NroDocumento = (string) str_repeat("0", 10-strlen($NroDocumento)).$NroDocumento;*/
 		$sql = "INSERT INTO ap_obligaciones
 				SET
 					CodProveedor = '".$CodProveedor."',
@@ -495,6 +490,23 @@ if ($modulo == "obligacion") {
 						MontoRetenido = '".setNumero($facturas_MontoRetenido[$i])."',
 						UltimoUsuario = '".$_SESSION["USUARIO_ACTUAL"]."',
 						UltimaFecha = NOW()";
+			execute($sql);
+		}
+		//	adelantos
+		for ($i=0; $i < count($adelantos_CodAdelanto); $i++) {
+			$sql = "INSERT INTO ap_obligacionesadelantos
+					SET
+						CodProveedor = '$CodProveedor',
+						CodTipoDocumento = '$CodTipoDocumento',
+						NroDocumento = '$NroDocumento',
+						CodAdelanto = '$adelantos_CodAdelanto[$i]',
+						UltimoUsuario = '".$_SESSION["USUARIO_ACTUAL"]."',
+						UltimaFecha = NOW()";
+			execute($sql);
+			##	
+			$sql = "UPDATE ap_gastoadelanto
+					SET Estado = 'AC'
+					WHERE CodAdelanto = '$adelantos_CodAdelanto[$i]'";
 			execute($sql);
 		}
 		//	si viene de viatico

@@ -216,7 +216,7 @@ function obligacion(form, accion) {
 	if (error != "") {
 		cajaModal(error, "error", 400);
 	} else {
-		var url = "modulo=obligacion&accion="+accion+"&"+post+"&detalles_impuesto="+detalles_impuesto+"&detalles_documento="+detalles_documento+"&detalles_distribucion="+detalles_distribucion+"&"+$('#frmfacturas').serialize();
+		var url = "modulo=obligacion&accion="+accion+"&"+post+"&detalles_impuesto="+detalles_impuesto+"&detalles_documento="+detalles_documento+"&detalles_distribucion="+detalles_distribucion+"&"+$('#frmfacturas').serialize()+"&"+$('#frmadelantos').serialize();
 		if (accion == "anular") {
 			var MotivoAnulacion = $("#MotivoAnulacion").val();
 			var Estado = $("#Estado").val();

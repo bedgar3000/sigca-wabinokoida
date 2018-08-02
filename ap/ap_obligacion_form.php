@@ -34,6 +34,8 @@ if ($opcion == "nuevo") {
 	$disabled_impuesto = "disabled";
 	$disabled_documento = "disabled";
 	$disabled_distribucion = "disabled";
+	$disabled_facturas = "";
+	$disabled_adelantos = "";
 	$disabled_anular = "disabled";
 	$dFlagCompromiso = "disabled";
 	$mostrarTabDistribucion = "mostrarTabDistribucionObligacion();";
@@ -141,6 +143,8 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
 		$disabled_impuesto = "disabled";
 		$disabled_documento = "disabled";
 		$disabled_distribucion = "disabled";
+		$disabled_facturas = "disabled";
+		$disabled_adelantos = "disabled";
 		$disabled_anular = "disabled";
 		$mostrarTabDistribucion = "mostrarTab('tab', 4, 6);";
 	}
@@ -161,6 +165,8 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
 		$disabled_impuesto = "disabled";
 		$disabled_documento = "disabled";
 		$disabled_distribucion = "disabled";
+		$disabled_facturas = "disabled";
+		$disabled_adelantos = "disabled";
 		$disabled_anular = "disabled";
 		$mostrarTabDistribucion = "mostrarTab('tab', 4, 6);";
 		$dFechaRevision = "";
@@ -182,6 +188,8 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
 		$disabled_impuesto = "disabled";
 		$disabled_documento = "disabled";
 		$disabled_distribucion = "disabled";
+		$disabled_facturas = "disabled";
+		$disabled_adelantos = "disabled";
 		$disabled_anular = "disabled";
 		$mostrarTabDistribucion = "mostrarTab('tab', 4, 6);";
 		$dFechaAprobado = "";
@@ -199,6 +207,8 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
 		$disabled_impuesto = "disabled";
 		$disabled_documento = "disabled";
 		$disabled_distribucion = "disabled";
+		$disabled_facturas = "disabled";
+		$disabled_adelantos = "disabled";
 		$mostrarTabDistribucion = "mostrarTab('tab', 4, 6);";
 	}
 	
@@ -296,6 +306,8 @@ elseif ($opcion == "interfase-bono-nuevo") {
 	$disabled_impuesto = "disabled";
 	$disabled_documento = "disabled";
 	$disabled_distribucion = "disabled";
+	$disabled_facturas = "disabled";
+	$disabled_adelantos = "disabled";
 	$disabled_anular = "disabled";
 	$dFlagCompromiso = "disabled";
 	$disabled_modificar = "disabled";
@@ -391,6 +403,8 @@ elseif ($opcion == "certificaciones-generar") {
 	$disabled_impuesto = "disabled";
 	$disabled_documento = "disabled";
 	$disabled_distribucion = "disabled";
+	$disabled_facturas = "disabled";
+	$disabled_adelantos = "disabled";
 	$disabled_anular = "disabled";
 	$dFlagCompromiso = "disabled";
 	$disabled_modificar = "disabled";
@@ -496,6 +510,8 @@ elseif ($opcion == "generar-anticipo") {
 	$disabled_impuesto = "disabled";
 	$disabled_documento = "disabled";
 	$disabled_distribucion = "disabled";
+	$disabled_facturas = "disabled";
+	$disabled_adelantos = "disabled";
 	$disabled_anular = "disabled";
 	$dFlagCompromiso = "disabled";
 	$disabled_modificar = "disabled";
@@ -602,6 +618,8 @@ elseif ($opcion == "generar-valuacion") {
 	$disabled_impuesto = "disabled";
 	$disabled_documento = "disabled";
 	$disabled_distribucion = "disabled";
+	$disabled_facturas = "disabled";
+	$disabled_adelantos = "disabled";
 	$disabled_anular = "disabled";
 	$dFlagCompromiso = "disabled";
 	$disabled_modificar = "disabled";
@@ -701,6 +719,8 @@ elseif ($opcion == "viaticos-generar") {
 	$disabled_impuesto = "disabled";
 	$disabled_documento = "disabled";
 	$disabled_distribucion = "disabled";
+	$disabled_facturas = "disabled";
+	$disabled_adelantos = "disabled";
 	$disabled_anular = "disabled";
 	$dFlagCompromiso = "disabled";
 	$disabled_modificar = "disabled";
@@ -733,7 +753,7 @@ elseif ($opcion == "adelanto-generar") {
 				'S' AS FlagGenerarPago,
 				ga.CodTipoServicio,
 				ga.CodClasificacion AS ReferenciaTipoDocumento,
-				ga.NroAdelanto AS ReferenciaNroDocumento,
+				CONCAT(ga.CodClasificacion, ga.NroAdelanto, SUBSTRING(ga.Periodo, 1, 4)) AS ReferenciaNroDocumento,
 				(ga.MontoAfecto + ga.MontoNoAfecto) As MontoObligacion,
 				'0.00' AS MontoImpuestoOtros,
 				ga.MontoNoAfecto,
@@ -749,21 +769,21 @@ elseif ($opcion == "adelanto-generar") {
 				'$FechaActual' AS FechaDocumento,
 				'N' AS FlagAfectoIGV,
 				'N' AS FlagDiferido,
-				'N' AS FlagAdelanto,
+				'S' AS FlagAdelanto,
 				'N' AS FlagPagoDiferido,
 				'PR' AS Estado,
 				'N' AS FlagCompromiso,
 				'N' AS FlagPresupuesto,
-				'N' AS FlagObligacionAuto,
-				'N' AS FlagObligacionDirecta,
-				'N' AS FlagCajaChica,
+				'S' AS FlagObligacionAuto,
+				'S' AS FlagObligacionDirecta,
+				'S' AS FlagCajaChica,
 				'N' AS FlagPagoIndividual,
-				CONCAT(ga.CodClasificacion, '-', ga.NroAdelanto) AS NroControl,
-				CONCAT(ga.CodClasificacion, '-', ga.NroAdelanto) AS NroFactura,
+				CONCAT(ga.CodClasificacion, ga.NroAdelanto, SUBSTRING(ga.Periodo, 1, 4)) AS NroControl,
+				CONCAT(ga.CodClasificacion, ga.NroAdelanto, SUBSTRING(ga.Periodo, 1, 4)) AS NroFactura,
 				'$FechaActual' AS FechaProgramada,
 				'$FechaActual' AS FechaPreparacion,
 				'$PeriodoActual' AS Periodo,
-				'S' AS FlagDistribucionManual,
+				'N' AS FlagDistribucionManual,
 				'$FechaActual' AS FechaFactura,
 				'N' AS FlagVerificado,
 				'' AS CodPresupuesto,
@@ -796,6 +816,8 @@ elseif ($opcion == "adelanto-generar") {
 	$disabled_impuesto = "disabled";
 	$disabled_documento = "disabled";
 	$disabled_distribucion = "disabled";
+	$disabled_facturas = "disabled";
+	$disabled_adelantos = "disabled";
 	$disabled_anular = "disabled";
 	$dFlagCompromiso = "disabled";
 	$disabled_modificar = "disabled";
@@ -2059,8 +2081,8 @@ $_width = 1100;
 			<tbody>
 				<tr>
 					<td align="right">
-						<input type="button" class="btLista" value="Insertar" onclick="insertar2(this, 'facturas', 'modulo=ajax&accion=facturas_insertar', 'ap_obligacion_ajax.php');" <?=$disabled_ver?> />
-						<input type="button" class="btLista" value="Borrar" onclick="quitar(this, 'facturas'); setMontos();" <?=$disabled_ver?> />
+						<input type="button" class="btLista" value="Insertar" onclick="insertar2(this, 'facturas', 'modulo=ajax&accion=facturas_insertar', 'ap_obligacion_ajax.php');" <?=$disabled_facturas?> />
+						<input type="button" class="btLista" value="Borrar" onclick="quitar(this, 'facturas'); setMontos();" <?=$disabled_facturas?> />
 					</td>
 				</tr>
 			</tbody>
@@ -2153,8 +2175,8 @@ $_width = 1100;
 				<tr>
 					<td align="right" class="gallery clearfix">
 						<a id="a_adelantos" href="../lib/listas/gehen.php?anz=lista_ap_gastoadelanto&filtrar=default&ventana=obligacion_adelanto&detalle=adelantos&modulo=ajax&accion=adelantos_insertar&url=../../ap/ap_obligacion_ajax.php&iframe=true&width=100%&height=100%" rel="prettyPhoto[iframe15]" style="display:none;"></a>
-						<input type="button" class="btLista" value="Insertar" onclick="abrirListaAdelanto();" <?=$disabled_ver?> />
-						<input type="button" class="btLista" value="Borrar" onclick="quitar(this, 'adelantos');" <?=$disabled_ver?> />
+						<input type="button" class="btLista" value="Insertar" onclick="abrirListaAdelanto();" <?=$disabled_adelantos?> />
+						<input type="button" class="btLista" value="Borrar" onclick="quitar(this, 'adelantos');" <?=$disabled_adelantos?> />
 					</td>
 				</tr>
 			</tbody>
