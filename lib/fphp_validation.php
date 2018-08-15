@@ -414,5 +414,5 @@ function valid_rif($str)
         return TRUE;
     }
 
-    return (bool) preg_match('/^[JGV]{1}[0-9]{8,9}$/', $str);
+    return (bool) preg_match('/^[VEPGJC]{1}[0-9]{8,9}$/', $str);
 }

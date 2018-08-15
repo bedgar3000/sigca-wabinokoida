@@ -70,6 +70,8 @@ $_width = 900;
 	<input type="hidden" name="campo8" id="campo8" value="<?=$campo8?>" />
 	<input type="hidden" name="campo9" id="campo9" value="<?=$campo9?>" />
 	<input type="hidden" name="campo10" id="campo10" value="<?=$campo10?>" />
+	<input type="hidden" name="campo11" id="campo11" value="<?=$campo11?>" />
+	<input type="hidden" name="campo12" id="campo12" value="<?=$campo12?>" />
 	<input type="hidden" name="ventana" id="ventana" value="<?=$ventana?>" />
 	<input type="hidden" name="detalle" id="detalle" value="<?=$detalle?>" />
 	<input type="hidden" name="modulo" id="modulo" value="<?=$modulo?>" />
@@ -214,7 +216,18 @@ $_width = 900;
 						i.*,
 						(i.Ingresos - i.Egresos) StockActual,
 						((i.Ingresos - i.Egresos) / i.CantidadEqui) AS StockActualEqui,
-						(SELECT MAX(k.PrecioUnitario) FROM lg_kardex k WHERE k.CodItem = i.CodItem) AS PrecioCostoUnitario,
+						(SELECT MAX(k.PrecioUnitario)
+						 FROM lg_kardex k
+						 INNER JOIN lg_tipotransaccion tt ON (
+							tt.CodTransaccion = k.CodTransaccion
+							AND tt.TipoMovimiento = 'I'
+						 )
+						 INNER JOIN lg_transaccion t ON (
+							t.CodDocumento = k.CodDocumento
+							AND t.NroDocumento = k.NroDocumento
+							AND t.ReferenciaAnio = '$AnioActual'
+						 )
+						 WHERE k.CodItem = i.CodItem) AS PrecioCostoUnitario,
 						(SELECT u.Valor FROM lg_itemunidades u WHERE u.CodItem = i.CodItem LIMIT 1) AS CantidadEquivalente
 					FROM vw_lg_inventarioactual_item i
 					WHERE 1 $filtro
@@ -247,12 +260,11 @@ $_width = 900;
 				}
 				elseif ($ventana == 'co_precios') {
 					$PrecioCostoUnitario = floatval($f['PrecioCostoUnitario']);
-					$CantidadEquivalente = floatval($f['CantidadEquivalente']);
+					$CantidadEquivalente = floatval($f['CantidadEqui']);
 					$PrecioCostoVenta = $PrecioCostoUnitario * $CantidadEquivalente;
 					?>
-		            <tr class="trListaBody" onClick="selLista(['<?=$f['CodItem']?>','<?=$f['Descripcion']?>','<?=$f['CodInterno']?>','<?=$f['CodUnidad']?>','<?=$f['CodUnidadComp']?>','<?=$PrecioCostoUnitario?>','<?=$PrecioCostoVenta?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>','<?=$campo7?>']);">
+		            <tr class="trListaBody" onClick="selListaPrecios(['<?=$f['CodItem']?>','<?=$f['Descripcion']?>','<?=$f['CodInterno']?>','<?=$f['CodUnidad']?>','<?=$f['CodUnidadComp']?>','<?=number_format($PrecioCostoUnitario,2,',','.')?>','<?=number_format($PrecioCostoVenta,2,',','.')?>','<?=$f['FlagImpuestoVentas']?>','<?=$f['CodImpuesto']?>','<?=$f['FactorImpuesto']?>','<?=$f['CantidadEqui']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>','<?=$campo7?>','<?=$campo8?>','<?=$campo9?>','<?=$campo10?>','<?=$campo11?>']);">
 		            <?php
-
 				}
 				elseif ($ventana == 'orden_compra_detalles_insertar') {
 					?>
@@ -263,7 +275,6 @@ $_width = 900;
 					?>
 		            <tr class="trListaBody" onClick="<?=$ventana?>(['<?=$f['CodItem']?>','<?=$f['Descripcion']?>','<?=$f['CodUnidad']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>']);">
 		            <?php
-
 				}
 				?>
 					<td align="center"><?=$f['CodItem']?></td>
@@ -371,5 +382,15 @@ $_width = 900;
 				}
 			}
 		});
+	}
+	
+	function selListaPrecios(valores, inputs) {
+		if (inputs) {
+			for(var i=0; i<inputs.length; i++) {
+				if (parent.$("#"+inputs[i]).length > 0) parent.$("#"+inputs[i]).val(valores[i]);
+			}
+		}
+		parent.calcularPrecio();
+		parent.$.prettyPhoto.close();
 	}
 </script>

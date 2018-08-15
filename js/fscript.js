@@ -61,7 +61,7 @@ function inicializar() {
 	}
 	if (typeof jQuery.fn.mask == 'function') {
 		$('.integer').mask("###0", {reverse: true, maxlength: false});
-		$('.documento').mask('Z000000000', {translation: {'Z': {pattern: /[0-9JGVEjgve]/, optional: true}}});
+		$('.documento').mask('Z000000000', {translation: {'Z': {pattern: /[0-9VEPGJCVvepgjcv]/, optional: true}}});
 		$('.ip_address').mask('0ZZ.0ZZ.0ZZ.0ZZ', {translation: {'Z': {pattern: /[0-9]/, optional: true}}});
 		$('.mac_address').mask('AA-AA-AA-AA-AA-AA');
 		$('.datepicker').mask('D0-M0-0000', {translation: {'D': {pattern: /[0-3]/}, 'M': {pattern: /[0-1]/} }} );

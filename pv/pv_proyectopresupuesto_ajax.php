@@ -213,7 +213,7 @@ if ($modulo == "formulario") {
 		execute($sql);
 		##	detalle
 		for ($i=0; $i < count($cod_partida); $i++) {
-			if (setNumero($MontoAprobadoDet[$i])) {
+			if (setNumero($MontoAprobadoDet[$i]) > 0) {
 				if ($FlagAnexa[$i] == 'S')
 				{
 					if (setNumero($MontoAprobadoDet[$i]) > 0)
@@ -274,7 +274,7 @@ if ($modulo == "formulario") {
 		$sql = "SELECT * FROM pv_proyectopresupuestodet WHERE CodOrganismo = '".$field['CodOrganismo']."' AND CodProyPresupuesto = '".$field['CodProyPresupuesto']."'";
 		$field_detalle = getRecords($sql);
 		foreach ($field_detalle as $f) {
-			if ($f['MontoAprobado']) {
+			if ($f['MontoAprobado'] > 0) {
 				$sql = "INSERT INTO pv_presupuestodet
 						SET
 							CodOrganismo = '".$f['CodOrganismo']."',
@@ -617,6 +617,51 @@ elseif ($modulo == "ajax") {
 
 				$p = $cod_partida[$i];
 				$Partida[$f][$p] += $MontoPresupuestado[$i];
+			}
+		}
+
+		foreach ($Fuente as $CodigoFuente => $MontoFuente)
+		{
+			?>
+			<tr class="trListaBody2">
+				<td colspan="2">
+					<?=$CodigoFuente?> - <?=getVar3("SELECT Denominacion FROM pv_fuentefinanciamiento WHERE CodFuente = '$CodigoFuente'")?>
+				</td>
+				<td align="right"><?=number_format($MontoFuente,2,',','.')?></td>
+			</tr>
+			<?php
+
+			foreach ($Partida[$CodigoFuente] as $CodigoPartida => $MontoPartida)
+			{
+				?>
+				<tr class="trListaBody">
+					<td align="center"><?=$CodigoPartida?></td>
+					<td>
+						<input type="text" value="<?=getVar3("SELECT denominacion FROM pv_partida WHERE cod_partida = '$CodigoPartida'")?>" class="cell2" readonly />
+						</td>
+					<td align="right"><?=number_format($MontoPartida,2,',','.')?></td>
+				</tr>
+				<?php
+			}
+		}
+		?>
+		<?php
+	}
+	//	resumen presupuestario aprobado
+	elseif($accion == "resumen_presupuestario_aprobado") {
+		$Fuente = [];
+		$Partida = [];
+		for ($i=0; $i < count($CodFuente); $i++)
+		{
+			$MontoAprobadoDet[$i] = setNumero($MontoAprobadoDet[$i]);
+
+			if ($MontoAprobadoDet[$i] > 0) 
+			{
+				$f = $CodFuente[$i];
+				$Fuente[$f] += $MontoAprobadoDet[$i];
+
+				$p = $cod_partida[$i];
+				$Partida[$f][$p] += $MontoAprobadoDet[$i];
 			}
 		}
 

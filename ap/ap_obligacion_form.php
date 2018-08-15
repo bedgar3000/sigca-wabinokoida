@@ -2198,42 +2198,33 @@ $_width = 1100;
 				<tbody id="lista_adelantos">
 					<?php
 					$nro_adelantos = 0;
+					$sql = "SELECT
+								oa.*,
+								ga.MontoTotal
+							FROM ap_obligacionesadelantos oa
+							INNER JOIN ap_gastoadelanto ga ON ga.CodAdelanto = oa.CodAdelanto
+							WHERE
+								CodProveedor = '$field_obligacion[CodProveedor]' AND
+								CodTipoDocumento = '$field_obligacion[CodTipoDocumento]' AND
+								NroDocumento = '$field_obligacion[NroDocumento]'";
+					$field_adelantos = getRecords($sql);
 					foreach ($field_adelantos as $f) {
 						$id = ++$nro_adelantos;
 						?>
 						<tr class="trListaBody" onclick="clk($(this), 'adelantos', 'adelantos_<?=$id?>');" id="adelantos_<?=$id?>">
 							<th>
-								<?=$nro_adelantos?>
+								<input type="hidden" name="adelantos_CodAdelanto[]" value="<?=$f['CodAdelanto']?>">
+								<input type="hidden" name="adelantos_MontoTotal[]" value="<?=$f['MontoTotal']?>">
+								<?=$nro_detalle?>
 							</th>
-							<td>
-								<input type="text" name="adelantos_NroControl[]" value="<?=$f['NroControl']?>" style="text-align:center;" class="cell" maxlength="20">
+							<td align="center"><?=formatFechaDMA($f['FechaDocumento'])?></td>
+							<td align="center"><?=$f['CodProveedor']?></td>
+							<td align="center"><?=printValores('adelanto-tipo',$f['TipoAdelanto'])?></td>
+							<td align="center"><?=$f['NroAdelanto']?></td>
+							<td align="right">
+								<strong><?=number_format($f['MontoTotal'],2,',','.')?></strong>
 							</td>
-							<td>
-								<input type="text" name="adelantos_NroFactura[]" value="<?=$f['NroFactura']?>" style="text-align:center;" class="cell" maxlength="20">
-							</td>
-							<td>
-								<input type="text" name="adelantos_MontoAfecto[]" id="adelantos_MontoAfecto<?=$id?>" value="<?=number_format($f['MontoAfecto'],2,',','.')?>" style="text-align:right;" class="cell currency" onchange="getMontoImpuesto('<?=$id?>');">
-							</td>
-							<td>
-								<input type="text" name="adelantos_MontoNoAfecto[]" id="adelantos_MontoNoAfecto<?=$id?>" value="<?=number_format($f['MontoNoAfecto'],2,',','.')?>" style="text-align:right;" class="cell currency" onchange="getMontoImpuesto('<?=$id?>');">
-							</td>
-							<td>
-								<input type="text" name="adelantos_MontoImpuesto[]" id="adelantos_MontoImpuesto<?=$id?>" value="<?=number_format($f['MontoImpuesto'],2,',','.')?>" style="text-align:right;" class="cell currency" onchange="setMontoImpuesto('<?=$id?>');">
-							</td>
-							<td>
-								<input type="text" name="adelantos_MontoFactura[]" id="adelantos_MontoFactura<?=$id?>" value="<?=number_format($f['MontoFactura'],2,',','.')?>" style="text-align:right;" class="cell currency" readonly>
-							</td>
-							<td>
-                                <select name="adelantos_CodImpuesto[]" id="adelantos_CodImpuesto<?=$id?>" class="cell" onchange="getMontoRetencion(this.value, '<?=$id?>');">
-                                	<?=loadSelect2('mastimpuestos','CodImpuesto','Descripcion',$f['CodImpuesto'])?>
-                                </select>
-							</td>
-							<td>
-								<input type="text" name="adelantos_FactorPorcentaje[]" id="adelantos_FactorPorcentaje<?=$id?>" value="<?=number_format($f['FactorPorcentaje'],2,',','.')?>" style="text-align:right;" class="cell currency" readonly>
-							</td>
-							<td>
-								<input type="text" name="adelantos_MontoRetenido[]" id="adelantos_MontoRetenido<?=$id?>" value="<?=number_format($f['MontoRetenido'],2,',','.')?>" style="text-align:right;" class="cell currency">
-							</td>
+							<td><?=$f['Descripcion']?></td>
 						</tr>
 						<?php
 					}

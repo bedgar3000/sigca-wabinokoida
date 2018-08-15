@@ -626,14 +626,19 @@ $_width = 900;
 	            <ul id="tab">
 		            <!-- CSS Tabs -->
 		            <li id="li1" onclick="currentTab('tab', this);" class="current">
-		            	<a href="#" onclick="mostrarTab('tab', 1, 3);">Información General</a>
+		            	<a href="#" onclick="mostrarTab('tab', 1, 4);">Información General</a>
 		            </li>
 		            <li id="li2" onclick="currentTab('tab', this);">
-		            	<a href="#" onclick="mostrarTab('tab', 2, 3);">Distribución Presupuestaria</a>
+		            	<a href="#" onclick="mostrarTab('tab', 2, 4);">Distribución Presupuestaria</a>
 		            </li>
 		            <li id="li3" onclick="currentTab('tab', this); resumen_presupuestario();">
-		            	<a href="#" onclick="mostrarTab('tab', 3, 3);">Resumen Presupuestario</a>
+		            	<a href="#" onclick="mostrarTab('tab', 3, 4);">Resumen Presupuestario</a>
 		            </li>
+					<?php if ($field['Estado'] == 'GE') { ?>
+						<li id="li4" onclick="currentTab('tab', this); resumen_presupuestario_aprobado();">
+							<a href="#" onclick="mostrarTab('tab', 4, 4);">Resumen Presupuestario (Aprobado)</a>
+						</li>
+					<?php } ?>
 	            </ul>
             </div>
         </td>
@@ -972,6 +977,30 @@ $_width = 900;
 		</div>
 	</div>
 
+	<div id="tab4" style="display:none;">
+		<table width="<?=$_width?>" class="tblBotones">
+			<thead>
+				<tr>
+					<th class="divFormCaption">Resumen Presupuetario (Aprobado)</th>
+				</tr>
+			</thead>
+		</table>
+		<div style="overflow:scroll; height:400px; width:<?=$_width?>px; margin:auto;">
+			<table class="tblLista" style="width:100%;">
+				<thead>
+					<tr>
+						<th width="80">Partida</th>
+						<th align="left">Denominación</th>
+						<th width="150">Monto</th>
+					</tr>
+				</thead>
+				<tbody id="tabla_resumen_aprobado">
+					
+				</tbody>
+			</table>
+		</div>
+	</div>
+
 	<center>
 		<input type="submit" value="<?=$label_submit?>" style="width:75px; <?=$display_submit?>" id="btSubmit" />
 		<input type="button" value="Cancelar" style="width:75px;" id="btCancelar" onclick="<?=$clkCancelar?>" />
@@ -1077,6 +1106,12 @@ $_width = 900;
 		$('#tabla_resumen').html('Cargando resumen....');
 		$.post('pv_proyectopresupuesto_ajax.php', "modulo=ajax&accion=resumen_presupuestario&"+$('#frmentrada').serialize(), function(data) {
 			$('#tabla_resumen').html(data);
+	    });
+	}
+	function resumen_presupuestario_aprobado() {
+		$('#tabla_resumen').html('Cargando resumen....');
+		$.post('pv_proyectopresupuesto_ajax.php', "modulo=ajax&accion=resumen_presupuestario_aprobado&"+$('#frmentrada').serialize(), function(data) {
+			$('#tabla_resumen_aprobado').html(data);
 	    });
 	}
 </script>

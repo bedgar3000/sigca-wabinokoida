@@ -68,7 +68,7 @@ $clkCancelar = "document.getElementById('frmentrada').submit();";
 //	------------------------------------
 $_width = 800;
 ?>
-<?php if ($accion == 'ver_window') { ?>
+<?php if ($accion != 'ver_window') { ?>
 	<table width="100%" cellspacing="0" cellpadding="0">
 		<tr>
 			<td class="titulo"><?=$_titulo?></td>
@@ -87,7 +87,11 @@ $_width = 800;
 	<input type="hidden" name="fEstado" id="fEstado" value="<?=$fEstado?>" />
 	<input type="hidden" name="fTipoDetalle" id="fTipoDetalle" value="<?=$fTipoDetalle?>" />
 	<input type="hidden" name="CodPrecio" id="CodPrecio" value="<?=$field['CodPrecio']?>" />
-
+	<input type="hidden" name="FlagImpuestoVentas" id="FlagImpuestoVentas" value="<?=$field['FlagImpuestoVentas']?>" />
+	<input type="hidden" name="CodImpuesto" id="CodImpuesto" value="<?=$field['CodImpuesto']?>" />
+	<input type="hidden" name="FactorImpuesto" id="FactorImpuesto" value="<?=$field['FactorImpuesto']?>" />
+	<input type="hidden" name="CantidadEqui" id="CantidadEqui" value="<?=$field['CantidadEqui']?>" />
+	
 	<table style="width:100%; max-width:<?=$_width?>px;" class="tblForm">
 		<tr>
 	    	<td colspan="4" class="divFormCaption">Datos Generales</td>
@@ -113,7 +117,7 @@ $_width = 800;
 					<input type="hidden" name="CodItem" id="CodItem" value="<?=$field['CodItem']?>" />
 					<input type="text" name="CodInterno" id="CodInterno" value="<?=$field['CodInterno']?>" style="width:75px;" readonly />
 					<input type="text" name="Item" id="Item" value="<?=$field['Item']?>" style="width:256px;" disabled />
-					<a href="../lib/listas/gehen.php?anz=lista_lg_items&filtrar=default&campo1=CodItem&campo2=Item&campo3=CodInterno&campo4=CodUnidad&campo5=CodUnidadVenta&campo6=PrecioCostoUnitario&campo7=PrecioCosto&ventana=co_precios&iframe=true&width=100%&height=100%" rel="prettyPhoto[iframe1]" style=" <?=$display_modificar?>">
+					<a href="../lib/listas/gehen.php?anz=lista_lg_items&filtrar=default&campo1=CodItem&campo2=Item&campo3=CodInterno&campo4=CodUnidad&campo5=CodUnidadVenta&campo6=PrecioCostoUnitario&campo7=PrecioCosto&campo8=FlagImpuestoVentas&campo9=CodImpuesto&campo10=FactorImpuesto&campo11=CantidadEqui&ventana=co_precios&iframe=true&width=100%&height=100%" rel="prettyPhoto[iframe1]" style=" <?=$display_modificar?>">
 		            	<img src="../imagenes/f_boton.png" width="20" title="Seleccionar" align="absbottom" style="cursor:pointer;" />
 		            </a>
 				</td>
@@ -194,9 +198,9 @@ $_width = 800;
 			</td>
 		</tr>
 		<tr>
-			<td class="tagForm">* Precio Especial Vta.:</td>
+			<td class="tagForm">* Precio Especial Uni.:</td>
 			<td>
-				<input type="text" name="PrecioEspecialVta" id="PrecioEspecialVta" value="<?=number_format($field['PrecioEspecialVta'],2,',','.')?>" style="width:125px; text-align: right;" class="currency" <?=$disabled_ver?> />
+				<input type="text" name="PrecioEspecial" id="PrecioEspecial" value="<?=number_format($field['PrecioEspecial'],2,',','.')?>" style="width:125px; text-align: right;" class="currency" onchange="setPrecioEspecialVenta();" <?=$disabled_ver?> />
 			</td>
 			<td class="tagForm">* Porcentaje Dcto. 1:</td>
 			<td>
@@ -204,9 +208,9 @@ $_width = 800;
 			</td>
 		</tr>
 		<tr>
-			<td class="tagForm">* Precio Especial Uni.:</td>
+			<td class="tagForm">* Precio Especial Vta.:</td>
 			<td>
-				<input type="text" name="PrecioEspecial" id="PrecioEspecial" value="<?=number_format($field['PrecioEspecial'],2,',','.')?>" style="width:125px; text-align: right;" class="currency" <?=$disabled_ver?> />
+				<input type="text" name="PrecioEspecialVta" id="PrecioEspecialVta" value="<?=number_format($field['PrecioEspecialVta'],2,',','.')?>" style="width:125px; text-align: right;" class="currency" <?=$disabled_ver?> />
 			</td>
 			<td class="tagForm">* Porcentaje Dcto. 2:</td>
 			<td>
@@ -249,14 +253,39 @@ $_width = 800;
 
 <script type="text/javascript">
 	function calcularPrecio() {
+		var FlagImpuestoVentas = $('#FlagImpuestoVentas').val();
+		var FactorImpuesto = new Number($('#FactorImpuesto').val());
+		var CantidadEqui = new Number($('#CantidadEqui').val());
+		
 		var PorcMargen = setNumero($('#PorcMargen').val());
-		var PrecioCosto = setNumero($('#PrecioCosto').val());
+		//var PrecioCosto = setNumero($('#PrecioCosto').val());
 		var PrecioCostoUnitario = setNumero($('#PrecioCostoUnitario').val());
-		var PrecioMenor = PrecioCosto / (1 - (PorcMargen / 100));
-		var PrecioUnitario = PrecioCostoUnitario / (1 - (PorcMargen / 100));
+		
+		if ('<?=$_PARAMETRO['LISTPRECIVA']?>' == 'S') {
+			if (FlagImpuestoVentas == 'S') {
+				var PrecioMenor = (PrecioCostoUnitario / (1 - (PorcMargen / 100))) + ((PrecioCostoUnitario / (1 - (PorcMargen / 100))) * FactorImpuesto / 100);
+				//var PrecioUnitario = (PrecioCostoUnitario / (1 - (PorcMargen / 100))) + ((PrecioCostoUnitario / (1 - (PorcMargen / 100))) * 12 / 100);
+			} else {
+				var PrecioMenor = (PrecioCostoUnitario / (1 - (PorcMargen / 100)));
+				//var PrecioUnitario = (PrecioCostoUnitario / (1 - (PorcMargen / 100)));
+			}
+		} else {
+			var PrecioMenor = (PrecioCostoUnitario / (1 - (PorcMargen / 100)));
+			//var PrecioUnitario = (PrecioCostoUnitario / (1 - (PorcMargen / 100)));
+		}
+		var PrecioCosto = PrecioMenor * CantidadEqui;
+		//var PrecioMenor = PrecioCosto / (1 - (PorcMargen / 100));
+		//var PrecioUnitario = PrecioCostoUnitario / (1 - (PorcMargen / 100));
 
 		$('#PrecioMenor').val(PrecioMenor).formatCurrency();
-		$('#PrecioUnitario').val(PrecioUnitario).formatCurrency();
+		$('#PrecioCosto').val(PrecioCosto).formatCurrency();
+		//$('#PrecioUnitario').val(PrecioUnitario).formatCurrency();
+	}
+	function setPrecioEspecialVenta() {
+		var PrecioEspecial = setNumero($('#PrecioEspecial').val());
+		var CantidadEqui = new Number($('#CantidadEqui').val());
+		var PrecioEspecialVta = PrecioEspecial * CantidadEqui;
+		$('#PrecioEspecialVta').val(PrecioEspecialVta).formatCurrency();
 	}
 	function set_vigencia(checked) {
 		if (checked) {
