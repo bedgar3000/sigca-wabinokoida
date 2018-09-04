@@ -428,16 +428,18 @@ elseif ($modulo == "ajax")
 	{
 		if ($TipoPersona == 'N' && !numeric($Ndocumento))
 			die(json_encode(['status' => 'error', 'message' => 'Nro. Documento Formato Incorrecto (Solo se permiten valores numéricos)']));
-		elseif ($TipoPersona == 'J' && !valid_rif($Ndocumento))
-			die(json_encode(['status' => 'error', 'message' => 'Nro. Documento Formato Incorrecto (Solo se permite el formato del rif sin guiones)']));
-		elseif (!is_unique('mastpersonas','Ndocumento',$Ndocumento))
+		elseif ($TipoPersona == 'J' && !valid_rif_juridico($Ndocumento))
+			die(json_encode(['status' => 'error', 'message' => 'Nro. Documento Formato Incorrecto (Solo se permite el formato del documento sin guiones y las letras G,J,C para personas Jurídicas)']));
+		elseif (!is_unique('mastpersonas','Ndocumento',$Ndocumento, 'CodPersona', $CodPersona))
 			die(json_encode(['status' => 'error', 'message' => 'Nro. Documento ya registrado']));
 	}
 	elseif ($accion == 'validarRif') 
 	{
-		if (!valid_rif($DocFiscal))
-			die(json_encode(['status' => 'error', 'message' => 'Doc. Fiscal Formato Incorrecto (Solo se permite el formato del rif sin guiones)']));
-		elseif (!is_unique('mastpersonas','DocFiscal',$DocFiscal))
+		if ($TipoPersona == 'N' && !valid_rif_natural($DocFiscal))
+			die(json_encode(['status' => 'error', 'message' => 'Doc. Fiscal Formato Incorrecto (Solo se permite el formato del rif sin guiones y las letras V,E,P para personas Naturales)']));
+		elseif ($TipoPersona == 'J' && !valid_rif_juridico($DocFiscal))
+			die(json_encode(['status' => 'error', 'message' => 'Doc. Fiscal Formato Incorrecto (Solo se permite el formato del rif sin guiones y las letras G,J,C para personas Jurídicas)']));
+		elseif (!is_unique('mastpersonas','DocFiscal',$DocFiscal, 'CodPersona', $CodPersona))
 			die(json_encode(['status' => 'error', 'message' => 'Doc. Fiscal ya registrado']));
 	}
 }

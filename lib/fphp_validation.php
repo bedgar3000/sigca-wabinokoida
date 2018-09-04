@@ -400,7 +400,7 @@ function is_unique($table, $field, $value, $field_id = NULL, $value_id = NULL)
 }
 
 /**
- * Valid rIF
+ * Valid Rif
  *
  * Valida el formato de un rif
  *
@@ -415,4 +415,40 @@ function valid_rif($str)
     }
 
     return (bool) preg_match('/^[VEPGJC]{1}[0-9]{8,9}$/', $str);
+}
+
+/**
+ * Valid Rif
+ *
+ * Valida el formato de un rif
+ *
+ * @param   string
+ * @return  bool
+ */
+function valid_rif_natural($str)
+{
+    if (trim($str) == '')
+    {
+        return TRUE;
+    }
+
+    return (bool) preg_match('/^[VEP]{1}[0-9]{8,9}$/', $str);
+}
+
+/**
+ * Valid Rif
+ *
+ * Valida el formato de un rif
+ *
+ * @param   string
+ * @return  bool
+ */
+function valid_rif_juridico($str)
+{
+    if (trim($str) == '')
+    {
+        return TRUE;
+    }
+
+    return (bool) preg_match('/^[GJC]{1}[0-9]{8,9}$/', $str);
 }

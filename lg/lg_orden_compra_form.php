@@ -11,7 +11,7 @@ if ($opcion == "nuevo") {
 	//	valores default
 	$field_orden['Estado'] = "PR";
 	$field_orden['CodOrganismo'] = $_SESSION["ORGANISMO_ACTUAL"];
-	$field_orden['CodCentroCosto'] = $_SESSION["CCOSTO_ACTUAL"];
+	$field_orden['CodCentroCosto'] = getVar3("SELECT CodCentroCosto FROM ac_mastcentrocosto WHERE Codigo = '$_PARAMETRO[CCOSTOCOMPRA]'");
 	$field_orden['PreparadaPor'] = $_SESSION["CODPERSONA_ACTUAL"];
 	$field_orden['NomPreparadaPor'] = $_SESSION["NOMBRE_USUARIO_ACTUAL"];
 	$field_orden['FechaPreparacion'] = substr($Ahora, 0, 10);
@@ -409,7 +409,7 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
             <td class="gallery clearfix">
                 <input type="text" name="Ejercicio" id="Ejercicio" value="<?=$field_orden['Ejercicio']?>" style="width:48px;" class="Ejercicio" readonly />
                 <input type="text" name="CodPresupuesto" id="CodPresupuesto" value="<?=$field_orden['CodPresupuesto']?>" style="width:48px;" class="CodPresupuesto" readonly />
-                <a href="../lib/listas/gehen.php?anz=lista_pv_presupuesto&filtrar=default&FlagCategoriaProg=S&fCodOrganismo=<?=$field_orden['CodOrganismo']?>&fEjercicio=<?=$field_orden['Ejercicio']?>&fCodDependencia=<?=$field_orden['CodDependencia']?>&campo1=Ejercicio&campo2=CodPresupuesto&campo3=CategoriaProg&ventana=lg_requerimiento&iframe=true&width=100%&height=425" rel="prettyPhoto[iframe4]" style=" <?=$display_ver?>" id="btPresupuesto">
+                <a href="../lib/listas/gehen.php?anz=lista_pv_presupuesto&filtrar=default&FlagCategoriaProg=S&fCodOrganismo=<?=$field_orden['CodOrganismo']?>&fEjercicio=<?=$field_orden['Ejercicio']?>&fCodDependencia=<?=$field_orden['CodDependencia']?>&campo1=Ejercicio&campo2=CodPresupuesto&campo3=CategoriaProg&ventana=lg_requerimiento&iframe=true&width=100%&height=425" rel="prettyPhoto[iframe5]" style=" <?=$display_ver?>" id="btPresupuesto">
                     <img src="../imagenes/f_boton.png" width="20" title="Seleccionar" align="absbottom" style="cursor:pointer;" />
                 </a>
             </td>
@@ -466,14 +466,14 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
 	<table width="1100" class="tblBotones">
 		<tr>
 	    	<td class="gallery clearfix">
-	            <a id="aSelCCosto" href="../lib/listas/listado_centro_costos.php?filtrar=default&cod=CodCentroCosto&nom=NomCentroCosto&ventana=selListadoLista&seldetalle=sel_detalles&filtroDependencia=S&iframe=true&width=1050&height=500" rel="prettyPhoto[iframe5]" style="display:none;"></a>
-	            <a id="aSelCategoriaProg" href="../lib/listas/gehen.php?anz=lista_pv_presupuesto&filtrar=default&FlagCategoriaProg=S&campo1=detallesCategoriaProg&campo2=detallesEjercicio&campo3=detallesCodPresupuesto&ventana=selListadoListaParentRequerimiento&seldetalle=sel_detalles&iframe=true&width=100%&height=400" rel="prettyPhoto[iframe11]" style="display:none;"></a>
+	            <a id="aSelCCosto" href="../lib/listas/listado_centro_costos.php?filtrar=default&cod=CodCentroCosto&nom=NomCentroCosto&ventana=selListadoLista&seldetalle=sel_detalles&filtroDependencia=S&iframe=true&width=1050&height=500" rel="prettyPhoto[iframe6]" style="display:none;"></a>
+	            <a id="aSelCategoriaProg" href="../lib/listas/gehen.php?anz=lista_pv_presupuesto&filtrar=default&FlagCategoriaProg=S&campo1=detallesCategoriaProg&campo2=detallesEjercicio&campo3=detallesCodPresupuesto&ventana=selListadoListaParentRequerimiento&seldetalle=sel_detalles&iframe=true&width=100%&height=400" rel="prettyPhoto[iframe7]" style="display:none;"></a>
 	            <input type="button" class="btLista" id="btSelCCosto" value="Sel. C.Costo" onclick="validarAbrirLista('sel_detalles', 'aSelCCosto');" <?=$disabled_ver?> />
 				<input type="button" style="width:90px;" id="btSelCategoriaProg" value="Sel. Presupuesto" onclick="validarAbrirLista('sel_detalles', 'aSelCategoriaProg');" <?=$disabled_ver?> />
 	        </td>
 			<td align="right" class="gallery clearfix">
-				<a id="aItem" href="../lib/listas/gehen.php?anz=lista_lg_items&filtrar=default&ventana=orden_compra_detalles_insertar&_APLICACION=LG&iframe=true&width=100%&height=100%" rel="prettyPhoto[iframe6]" style="display:none;"></a>
-	        	<a id="aCommodity" href="../lib/listas/listado_commodities.php?filtrar=default&ventana=orden_compra_detalles_insertar&PorClasificacion=S&Actualizar=S&iframe=true&width=100%&height=100%" rel="prettyPhoto[iframe7]" style="display:none;"></a>
+				<a id="aItem" href="../lib/listas/gehen.php?anz=lista_lg_items&filtrar=default&ventana=orden_compra_detalles_insertar&_APLICACION=LG&iframe=true&width=100%&height=100%" rel="prettyPhoto[iframe8]" style="display:none;"></a>
+	        	<a id="aCommodity" href="../lib/listas/listado_commodities.php?filtrar=default&ventana=orden_compra_detalles_insertar&PorClasificacion=S&Actualizar=S&iframe=true&width=100%&height=100%" rel="prettyPhoto[iframe9]" style="display:none;"></a>
 				<input type="button" class="btLista" value="Item" id="btItem" onclick="document.getElementById('aItem').click();" <?=$disabled_item?> />
 				<input type="button" class="btLista" value="Commodity" id="btCommodity" onclick="document.getElementById('aCommodity').click();" <?=$disabled_commodity?> />
 				<input type="button" class="btLista" value="Borrar" onclick="quitarLineaOrdenCompra(this, 'detalles', this.form);" <?=$disabled_ver?> />
@@ -1047,7 +1047,7 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
 	    	<td width="35"><div style="background-color:#FFC; width:25px; height:20px;"></div></td>
 	        <td>Disponibilidad presupuestaria (Tiene ordenes pendientes)</td>
 			<td align="right" class="gallery clearfix">
-	        	<a id="a_disponibilidad" href="pagina.php?iframe=true" rel="prettyPhoto[iframe8]" style="display:none;"></a>
+	        	<a id="a_disponibilidad" href="pagina.php?iframe=true" rel="prettyPhoto[iframe11]" style="display:none;"></a>
 				<input type="button" value="Disponibilidad Presupuestaria" onclick="verDisponibilidadPresupuestaria();" />
 			</td>
 		</tr>

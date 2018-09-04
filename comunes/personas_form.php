@@ -686,6 +686,8 @@ if (empty($selector))
 			$('#Busqueda').attr('readonly',false);
 			$('#NomCompleto').attr('readonly',false).focus();
 		}
+		$('#Ndocumento').val('');
+		$('#DocFiscal').val('');
 	}
 	function setTab(checked, tab) {
 		if (checked) $('#li'+tab).css('display','block');
@@ -698,7 +700,7 @@ if (empty($selector))
     }
     function validarCedula(Ndocumento) {
     	if (Ndocumento) {
-	        $.post('personas_ajax.php', {Ndocumento:Ndocumento, TipoPersona:$('#TipoPersona').val(), modulo:'ajax', accion:'validarCedula'}, function(data) {
+	        $.post('personas_ajax.php', {Ndocumento:Ndocumento, TipoPersona:$('#TipoPersona').val(), CodPersona:$('#CodPersona').val(), modulo:'ajax', accion:'validarCedula'}, function(data) {
 	            if (data['status'] == 'error') {
 	            	cajaModal(data['message']);
 	            	$('#Ndocumento').val('').focus();
@@ -708,7 +710,7 @@ if (empty($selector))
     }
     function validarRif(DocFiscal) {
     	if (DocFiscal) {
-	        $.post('personas_ajax.php', {DocFiscal:DocFiscal, TipoPersona:$('#TipoPersona').val(), modulo:'ajax', accion:'validarRif'}, function(data) {
+	        $.post('personas_ajax.php', {DocFiscal:DocFiscal, TipoPersona:$('#TipoPersona').val(), CodPersona:$('#CodPersona').val(), modulo:'ajax', accion:'validarRif'}, function(data) {
 	            if (data['status'] == 'error') {
 	            	cajaModal(data['message']);
 	            	$('#DocFiscal').val('').focus();

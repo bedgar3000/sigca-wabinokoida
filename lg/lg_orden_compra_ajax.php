@@ -1,7 +1,7 @@
 <?php
 include("../lib/fphp.php");
 include("lib/fphp.php");
-	$__archivo = fopen("_"."$modulo-$accion".".sql", "w+");
+//	$__archivo = fopen("_"."$modulo-$accion".".sql", "w+");
 ///////////////////////////////////////////////////////////////////////////////
 //	ORDEN DE COMPRA (NUEVO, MODIFICAR, REVISAR, APROBAR, ANULAR, CERRAR, CERRAR LINEAS)
 ///////////////////////////////////////////////////////////////////////////////

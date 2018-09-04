@@ -1,8 +1,8 @@
 <?php
 if ($opcion == "nuevo") {
 	$field['Estado'] = 'PR';
-	$field['CodCentroCosto'] = $_PARAMETRO['CCOSTOCXP'];
-	$field['CentroCosto'] = getVar3("SELECT Codigo FROM ac_mastcentrocosto WHERE CodCentroCosto = '$_PARAMETRO[CCOSTOCXP]'");
+	$field['CodCentroCosto'] = getVar3("SELECT CodCentroCosto FROM ac_mastcentrocosto WHERE Codigo = '$_PARAMETRO[CCOSTOCXP]'");
+	$field['CentroCosto'] = $_PARAMETRO['CCOSTOCXP'];
 	$field['FechaDocumento'] = $FechaActual;
 	$field['FechaEsperadaPago'] = $FechaActual;
 	$field['FechaPago'] = $FechaActual;

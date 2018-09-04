@@ -12,7 +12,8 @@ if ($opcion == "nuevo") {
 	$field['PreparadoPor'] = $_SESSION["CODPERSONA_ACTUAL"];
 	$field['NomPreparadoPor'] = $_SESSION["NOMBRE_USUARIO_ACTUAL"];
 	$field['FechaPreparacion'] = $FechaActual;
-	$field['CodCentroCosto'] = getVar3("SELECT CodCentroCosto FROM ac_mastcentrocosto WHERE Codigo = '".$_PARAMETRO["CCOSTOCXP"]."'");
+	$field['CodCentroCosto'] = getVar3("SELECT CodCentroCosto FROM ac_mastcentrocosto WHERE Codigo = '$_PARAMETRO[CCOSTOCXP]'");
+	$field['CentroCosto'] = $_PARAMETRO['CCOSTOCXP'];
 	##	presupuesto
 	$sql = "SELECT p.*
 			FROM pv_presupuesto p

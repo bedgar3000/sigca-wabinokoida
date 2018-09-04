@@ -13,8 +13,13 @@ if ($opcion == "nuevo") {
 	$field_orden['CodOrganismo'] = $_SESSION["ORGANISMO_ACTUAL"];
 	$field_orden['PreparadaPor'] = $_SESSION["CODPERSONA_ACTUAL"];
 	$field_orden['NomPreparadaPor'] = $_SESSION["NOMBRE_USUARIO_ACTUAL"];
-	$field_orden['CodDependencia'] = $_SESSION["DEPENDENCIA_ACTUAL"];
-	$field_orden['CodCentroCosto'] = $_SESSION["CCOSTO_ACTUAL"];
+	if ($_SESSION["DEPENDENCIA_ACTUAL"]) {
+		$field_orden['CodDependencia'] = $_SESSION["DEPENDENCIA_ACTUAL"];
+		$field_orden['CodCentroCosto'] = $_SESSION["CCOSTO_ACTUAL"];
+	} else {
+		$field_orden['CodCentroCosto'] = getVar3("SELECT CodCentroCosto FROM ac_mastcentrocosto WHERE Codigo = '$_PARAMETRO[CCOSTOCOMPRA]'");
+		$field_orden['CodDependencia'] = getVar3("SELECT CodDependencia FROM ac_mastcentrocosto WHERE Codigo = '$_PARAMETRO[CCOSTOCOMPRA]'");
+	}
 	$field_orden['Anio'] = substr($Ahora, 0, 4);
 	$field_orden['FechaDocumento'] = substr($Ahora, 0, 10);
 	$field_orden['FechaPreparacion'] = substr($Ahora, 0, 10);
