@@ -29,25 +29,25 @@ if ($fFechaOrdenD != "" || $fFechaOrdenH != "") {
 	if ($fFechaOrdenD != "") $filtro_oc.=" AND (oc.FechaOrden >= '".formatFechaAMD($fFechaOrdenD)."')";
 	if ($fFechaOrdenH != "") $filtro_oc.=" AND (oc.FechaOrden <= '".formatFechaAMD($fFechaOrdenH)."')";
 } else $dFechaOrden = "disabled";
-$filtro_oS = '';
-if ($fCodOrganismo != "") { $cCodOrganismo = "checked"; $filtro_oS.=" AND (os.CodOrganismo = '$fCodOrganismo')"; } else $dCodOrganismo = "disabled";
-if ($fCodFormaPago != "") { $cCodFormaPago = "checked"; $filtro_oS.=" AND (os.CodFormaPago = '$fCodFormaPago')"; } else $dCodFormaPago = "disabled";
-if ($fCodProveedor != "") { $cCodProveedor = "checked"; $filtro_oS.=" AND (os.CodProveedor = '$fCodProveedor')"; } else $dCodProveedor = "visibility:hidden;";
-if ($fEstado != "") { $cEstado = "checked"; $filtro_oS.=" AND (os.Estado = '".$fEstado."')"; } else $dEstado = "disabled";
+$filtro_os = '';
+if ($fCodOrganismo != "") { $cCodOrganismo = "checked"; $filtro_os.=" AND (os.CodOrganismo = '$fCodOrganismo')"; } else $dCodOrganismo = "disabled";
+if ($fCodFormaPago != "") { $cCodFormaPago = "checked"; $filtro_os.=" AND (os.CodFormaPago = '$fCodFormaPago')"; } else $dCodFormaPago = "disabled";
+if ($fCodProveedor != "") { $cCodProveedor = "checked"; $filtro_os.=" AND (os.CodProveedor = '$fCodProveedor')"; } else $dCodProveedor = "visibility:hidden;";
+if ($fEstado != "") { $cEstado = "checked"; $filtro_os.=" AND (os.Estado = '".$fEstado."')"; } else $dEstado = "disabled";
 if ($fBuscar != "") { 
 	$cBuscar = "checked"; 
-	$filtro_oS.=" AND (os.NroInterno LIKE '%$fBuscar%'
+	$filtro_os.=" AND (os.NroInterno LIKE '%$fBuscar%'
 					OR os.NomProveedor LIKE '%$fBuscar%'
 					OR os.Descripcion LIKE '%$fBuscar%'
 					OR os.DescAdicional LIKE '%$fBuscar%'
 					OR os.MotRechazo LIKE '%$fBuscar%'
 					OR os.Observaciones LIKE '%$fBuscar%'
-					OR oc.Anio LIKE '%$fBuscar%')";
+					OR os.Anio LIKE '%$fBuscar%')";
 } else $dBuscar = "disabled";
 if ($fFechaOrdenD != "" || $fFechaOrdenH != "") {
 	$cFechaOrden = "checked";
-	if ($fFechaOrdenD != "") $filtro_oS.=" AND (os.FechaOrden >= '".formatFechaAMD($fFechaOrdenD)."')";
-	if ($fFechaOrdenH != "") $filtro_oS.=" AND (os.FechaOrden <= '".formatFechaAMD($fFechaOrdenH)."')";
+	if ($fFechaOrdenD != "") $filtro_os.=" AND (os.FechaPreparacion >= '".formatFechaAMD($fFechaOrdenD)."')";
+	if ($fFechaOrdenH != "") $filtro_os.=" AND (os.FechaPreparacion <= '".formatFechaAMD($fFechaOrdenH)."')";
 } else $dFechaOrden = "disabled";
 //	------------------------------------
 $_titulo = "Cotizaciones";
@@ -191,14 +191,6 @@ $_width = 900;
 			    
 			    <tbody>
 				<?php
-				//	consulto todos
-				$sql = "SELECT *
-						FROM lg_ordencompra oc
-						INNER JOIN lg_almacenmast a1 ON oc.CodAlmacen = a1.Codalmacen
-						LEFT JOIN lg_almacenmast a2 ON oc.CodAlmacenIngreso = a2.Codalmacen
-						LEFT JOIN mastformapago fp ON oc.CodFormaPago = fp.CodFormaPago
-						WHERE 1 $filtro_oc";
-				$rows_total = getNumRows3($sql);
 				//	consulto lista
 				$sql = "SELECT
 							oc.Anio,
@@ -215,16 +207,27 @@ $_width = 900;
 							oc.Observaciones,
 							oc.Estado,
 							oc.FechaAnulacion,
+							oc.MontoAfecto,
+							oc.MontoNoAfecto,
+							oc.MontoIGV,
+							oc.MontoTotal,
+							oc.CodTipoServicio,
 							a1.Descripcion AS NomAlmacen,
 							a2.Descripcion AS NomAlmacenIngreso,
-							fp.Descripcion AS NomFormaPago
+							fp.Descripcion AS NomFormaPago,
+							i.FactorPorcentaje
 						FROM lg_ordencompra oc
 						INNER JOIN lg_almacenmast a1 ON oc.CodAlmacen = a1.Codalmacen
 						LEFT JOIN lg_almacenmast a2 ON oc.CodAlmacenIngreso = a2.Codalmacen
 						LEFT JOIN mastformapago fp ON oc.CodFormaPago = fp.CodFormaPago
+						LEFT JOIN masttiposervicio ts ON ts.CodTipoServicio = oc.CodTipoServicio
+						LEFT JOIN masttiposervicioimpuesto tsi ON tsi.CodTipoServicio = ts.CodTipoServicio
+						LEFT JOIN mastimpuestos i ON (
+							i.CodImpuesto = tsi.CodImpuesto
+							AND i.CodRegimenFiscal = 'I'
+						)
 						WHERE 1 $filtro_oc
-						ORDER BY Anio, CodOrganismo, NroInterno
-						LIMIT ".intval($limit).", ".intval($maxlimit);
+						ORDER BY Anio, CodOrganismo, NroInterno";
 				$field = getRecords($sql);
 				$rows_lista = count($field);
 				foreach($field as $f) {
@@ -237,6 +240,41 @@ $_width = 900;
 					elseif($ventana == "compromisos") {
 						?>
 			            <tr class="trListaBody" onClick="selLista(['<?=$f['Anio']?>','<?=$f['CodOrganismo']?>','<?=$f['NroOrden']?>','OC','<?=$f['NroInterno']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>']);">
+			            <?php
+					}
+					elseif($ventana == "ap_gastoadelanto") {
+						?>
+			            <tr class="trListaBody" onClick="selLista(
+			            	[
+				            	'<?=$f['Anio']?>',
+				            	'<?=$f['CodOrganismo']?>',
+				            	'<?=$f['NroOrden']?>',
+				            	'OC',
+				            	'<?=$f['NroInterno']?>',
+				            	'<?=$f['CodTipoServicio']?>',
+				            	'<?=number_format($f['MontoAfecto'],2,',','.')?>',
+				            	'<?=number_format($f['MontoNoAfecto'],2,',','.')?>',
+				            	'<?=number_format($f['FactorPorcentaje'],2,',','.')?>',
+				            	'<?=number_format($f['MontoIGV'],2,',','.')?>',
+				            	'0,00',
+				            	'<?=number_format($f['MontoTotal'],2,',','.')?>',
+				            	'<?=number_format($f['MontoTotal'],2,',','.')?>',
+				            ],
+			            	[
+				            	'Anio',
+				            	'CodOrganismo',
+				            	'NroOrden',
+				            	'TipoCompromiso',
+				            	'NroCompromiso',
+				            	'CodTipoServicio',
+				            	'MontoAfecto',
+				            	'MontoNoAfecto',
+				            	'FactorPorcentaje',
+				            	'MontoImpuestoVentas',
+				            	'MontoRetenciones',
+				            	'MontoTotal',
+				            	'SaldoAdelanto',
+			            	]);">
 			            <?php
 					}
 					else {
@@ -266,7 +304,6 @@ $_width = 900;
 			</table>
 		</div>
 	</div>
-
 
     <div id="tab2" style="display:none;">
 		<div class="scroll" style="overflow:scroll; width:100%; min-width:<?=$_width?>px; height:265px;">
@@ -309,11 +346,17 @@ $_width = 900;
 							os.TotalMontoIva,
 							os.Estado,
 							os.NroInterno,
-							os.FechaAnulacion
+							os.FechaAnulacion,
+							i.FactorPorcentaje
 						FROM lg_ordenservicio os
+						LEFT JOIN masttiposervicio ts ON ts.CodTipoServicio = os.CodTipoServicio
+						LEFT JOIN masttiposervicioimpuesto tsi ON tsi.CodTipoServicio = ts.CodTipoServicio
+						LEFT JOIN mastimpuestos i ON (
+							i.CodImpuesto = tsi.CodImpuesto
+							AND i.CodRegimenFiscal = 'I'
+						)
 						WHERE 1 $filtro_os
-						ORDER BY Anio, CodOrganismo, NroInterno
-						LIMIT ".intval($limit).", ".intval($maxlimit);
+						ORDER BY Anio, CodOrganismo, NroInterno";
 				$field = getRecords($sql);
 				$rows_lista = count($field);
 				foreach($field as $f) {
@@ -326,6 +369,43 @@ $_width = 900;
 					elseif($ventana == "compromisos") {
 						?>
 			            <tr class="trListaBody" onClick="selLista(['<?=$f['Anio']?>','<?=$f['CodOrganismo']?>','<?=$f['NroOrden']?>','OC','<?=$f['NroInterno']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>']);">
+			            <?php
+					}
+					elseif($ventana == "ap_gastoadelanto") {
+						?>
+			            <tr class="trListaBody" onClick="selLista(
+			            	[
+				            	'<?=$f['Anio']?>',
+				            	'<?=$f['CodOrganismo']?>',
+				            	'<?=$f['NroOrden']?>',
+				            	'OS',
+				            	'<?=$f['NroInterno']?>',
+				            	'<?=$f['CodTipoServicio']?>',
+				            	'<?=number_format($f['MontoOriginal'],2,',','.')?>',
+				            	'<?=number_format($f['MontoNoAfecto'],2,',','.')?>',
+				            	'<?=number_format($f['FactorPorcentaje'],2,',','.')?>',
+				            	'<?=number_format($f['MontoIva'],2,',','.')?>',
+				            	'0,00',
+				            	'<?=number_format($f['TotalMontoIva'],2,',','.')?>',
+				            	'<?=number_format($f['TotalMontoIva'],2,',','.')?>',
+				            	'<?=$f['CodTipoPago']?>',
+				            ],
+			            	[
+				            	'Anio',
+				            	'CodOrganismo',
+				            	'NroOrden',
+				            	'TipoCompromiso',
+				            	'NroCompromiso',
+				            	'CodTipoServicio',
+				            	'MontoAfecto',
+				            	'MontoNoAfecto',
+				            	'FactorPorcentaje',
+				            	'MontoImpuestoVentas',
+				            	'MontoRetenciones',
+				            	'MontoTotal',
+				            	'SaldoAdelanto',
+				            	'CodTipoPago',
+			            	]);">
 			            <?php
 					}
 					else {

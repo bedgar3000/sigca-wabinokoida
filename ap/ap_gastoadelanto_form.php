@@ -225,7 +225,7 @@ else $action = "gehen.php?anz=ap_gastoadelanto_lista";
 			</td>
 			<td class="tagForm">Compromiso:</td>
 			<td class="gallery clearfix">
-				<a id="a_compromiso" href="../lib/listas/gehen.php?anz=lista_compromisos&campo1=Anio&campo2=CodOrganismo&campo3=NroOrden&campo4=TipoCompromiso&campo5=NroCompromiso&ventana=compromisos&filtrar=default&iframe=true&width=100%&height=100%" rel="prettyPhoto[iframe3]" style="display:none;"></a>
+				<a id="a_compromiso" href="../lib/listas/gehen.php?ventana=ap_gastoadelanto&anz=lista_compromisos&filtrar=default&iframe=true&width=100%&height=100%" rel="prettyPhoto[iframe3]" style="display:none;"></a>
 
 				<input type="hidden" name="Anio" id="Anio" value="<?=$field['Anio']?>">
 				<input type="hidden" name="NroOrden" id="NroOrden" value="<?=$field['NroOrden']?>">
@@ -487,7 +487,7 @@ else $action = "gehen.php?anz=ap_gastoadelanto_lista";
 
 		if (CodProveedor == '') cajaModal('Debe seleccionar un Proveedor');
 		else {
-			var href = "../lib/listas/gehen.php?anz=lista_compromisos&campo1=Anio&campo2=CodOrganismo&campo3=NroOrden&campo4=TipoCompromiso&campo5=NroCompromiso&fCodOrganismo="+CodOrganismo+"&fCodProveedor="+CodProveedor+"&fNomProveedor="+NomProveedor+"&ventana=&fFlagProveedor=S&fFlagOrganismo=S&filtrar=default&iframe=true&width=100%&height=100%";
+			var href = "../lib/listas/gehen.php?anz=lista_compromisos&fCodOrganismo="+CodOrganismo+"&fCodProveedor="+CodProveedor+"&fNomProveedor="+NomProveedor+"&ventana=ap_gastoadelanto&fFlagProveedor=S&fFlagOrganismo=S&filtrar=default&iframe=true&width=100%&height=100%";
 
 			$('#a_compromiso').attr('href', href);
 			$('#a_compromiso').click();

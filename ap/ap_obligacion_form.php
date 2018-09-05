@@ -751,13 +751,13 @@ elseif ($opcion == "adelanto-generar") {
 				'$FechaActual' AS FechaRegistro,
 				'$FechaActual' AS FechaVencimiento,
 				'S' AS FlagGenerarPago,
-				ga.CodTipoServicio,
+				'NING' AS CodTipoServicio,
 				ga.CodClasificacion AS ReferenciaTipoDocumento,
 				CONCAT(ga.CodClasificacion, ga.NroAdelanto, SUBSTRING(ga.Periodo, 1, 4)) AS ReferenciaNroDocumento,
-				(ga.MontoAfecto + ga.MontoNoAfecto) As MontoObligacion,
+				ga.SaldoAdelanto As MontoObligacion,
 				'0.00' AS MontoImpuestoOtros,
-				ga.MontoNoAfecto,
-				ga.MontoAfecto,
+				ga.SaldoAdelanto AS MontoNoAfecto,
+				'0.00' AS MontoAfecto,
 				'0.00' AS MontoAdelanto,
 				'0.00' AS MontoImpuesto,
 				'0.00' AS MontoPagoParcial,
@@ -1711,7 +1711,7 @@ $_width = 1100;
 					}
 					elseif ($opcion == "adelanto-generar") {
 						$sql = "SELECT
-									(ga.MontoAfecto + ga.MontoNoAfecto) AS Monto,
+									(ga.SaldoAdelanto) AS Monto,
 									td.CodCuentaAde AS CodCuenta,
 									td.CodCuentaAdePub20 AS CodCuentaPub20,
 									'' AS cod_partida,
@@ -2204,9 +2204,9 @@ $_width = 1100;
 							FROM ap_obligacionesadelantos oa
 							INNER JOIN ap_gastoadelanto ga ON ga.CodAdelanto = oa.CodAdelanto
 							WHERE
-								CodProveedor = '$field_obligacion[CodProveedor]' AND
-								CodTipoDocumento = '$field_obligacion[CodTipoDocumento]' AND
-								NroDocumento = '$field_obligacion[NroDocumento]'";
+								oa.CodProveedor = '$field_obligacion[CodProveedor]' AND
+								oa.CodTipoDocumento = '$field_obligacion[CodTipoDocumento]' AND
+								oa.NroDocumento = '$field_obligacion[NroDocumento]'";
 					$field_adelantos = getRecords($sql);
 					foreach ($field_adelantos as $f) {
 						$id = ++$nro_adelantos;

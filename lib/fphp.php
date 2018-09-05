@@ -1027,8 +1027,8 @@ function getFirma($CodPersona, $swNomCompleto=NULL, $swEstado=NULL, $swCodCargoT
 				p2.Grado AS GradoEncargado
 			FROM
 				mastpersonas mp
-				INNER JOIN mastempleado me ON (mp.CodPersona = me.CodPersona)
-				INNER JOIN rh_puestos p1 ON (me.CodCargo = p1.CodCargo)
+				LEFT JOIN mastempleado me ON (mp.CodPersona = me.CodPersona)
+				LEFT JOIN rh_puestos p1 ON (me.CodCargo = p1.CodCargo)
 				LEFT JOIN rh_puestos p2 ON ($innerp2 = p2.CodCargo)
 			WHERE mp.CodPersona = '".$CodPersona."'";
 	$query = mysql_query($sql) or die(getErrorSql(mysql_errno(), mysql_error(), $sql));
