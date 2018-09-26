@@ -453,6 +453,7 @@ else $action = "gehen.php?anz=ap_gastoadelanto_lista";
 		if (FlagImpuesto) var MontoImpuestoVentas = setNumero($('#MontoImpuestoVentas').val());
 		else var MontoImpuestoVentas = MontoAfecto * FactorPorcentaje / 100;
 		var MontoRetenciones = 0;
+		
 		//	retenciones
 		$('input[name="retencion_Secuencia[]"]').each(function(idx) {
 			var retencion_FlagImponible = $('input[name="retencion_FlagImponible[]"]:eq('+idx+')').val();
@@ -467,14 +468,14 @@ else $action = "gehen.php?anz=ap_gastoadelanto_lista";
 			retencion_MontoImpuesto = retencion_MontoAfecto * retencion_Factor / 100;
 			if (retencion_Signo == "N") retencion_MontoImpuesto = retencion_MontoImpuesto * -1;
 			MontoRetenciones = MontoRetenciones + retencion_MontoImpuesto;
-
+			
 			$('input[name="retencion_MontoImpuesto[]"]:eq('+idx+')').val(retencion_MontoImpuesto).formatCurrency();
 		});
 		//	
 		MontoRetenciones = MontoRetenciones * -1;
 		var MontoTotal = MontoAfecto + MontoNoAfecto + MontoImpuestoVentas;
 		var SaldoAdelanto = MontoTotal - MontoRetenciones;
-
+		
 		$('#MontoImpuestoVentas').val(MontoImpuestoVentas).formatCurrency();
 		$('#MontoRetenciones').val(MontoRetenciones).formatCurrency();
 		$('#MontoTotal').val(MontoTotal).formatCurrency();

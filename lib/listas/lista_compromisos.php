@@ -215,8 +215,10 @@ $_width = 900;
 							a1.Descripcion AS NomAlmacen,
 							a2.Descripcion AS NomAlmacenIngreso,
 							fp.Descripcion AS NomFormaPago,
+							pr.CodTipoPago,
 							i.FactorPorcentaje
 						FROM lg_ordencompra oc
+						LEFT JOIN mastproveedores pr ON pr.CodProveedor = oc.CodProveedor
 						INNER JOIN lg_almacenmast a1 ON oc.CodAlmacen = a1.Codalmacen
 						LEFT JOIN lg_almacenmast a2 ON oc.CodAlmacenIngreso = a2.Codalmacen
 						LEFT JOIN mastformapago fp ON oc.CodFormaPago = fp.CodFormaPago
@@ -254,11 +256,13 @@ $_width = 900;
 				            	'<?=$f['CodTipoServicio']?>',
 				            	'<?=number_format($f['MontoAfecto'],2,',','.')?>',
 				            	'<?=number_format($f['MontoNoAfecto'],2,',','.')?>',
-				            	'<?=number_format($f['FactorPorcentaje'],2,',','.')?>',
+				            	'<?=$f['FactorPorcentaje']?>',
 				            	'<?=number_format($f['MontoIGV'],2,',','.')?>',
 				            	'0,00',
 				            	'<?=number_format($f['MontoTotal'],2,',','.')?>',
 				            	'<?=number_format($f['MontoTotal'],2,',','.')?>',
+				            	'<?=htmlentities($f['Observaciones'])?>',
+				            	'<?=$f['CodTipoPago']?>',
 				            ],
 			            	[
 				            	'Anio',
@@ -274,6 +278,8 @@ $_width = 900;
 				            	'MontoRetenciones',
 				            	'MontoTotal',
 				            	'SaldoAdelanto',
+				            	'Descripcion',
+				            	'CodTipoPago',
 			            	]);">
 			            <?php
 					}
@@ -347,6 +353,8 @@ $_width = 900;
 							os.Estado,
 							os.NroInterno,
 							os.FechaAnulacion,
+							os.CodTipoServicio,
+							os.CodTipoPago,
 							i.FactorPorcentaje
 						FROM lg_ordenservicio os
 						LEFT JOIN masttiposervicio ts ON ts.CodTipoServicio = os.CodTipoServicio
@@ -383,12 +391,13 @@ $_width = 900;
 				            	'<?=$f['CodTipoServicio']?>',
 				            	'<?=number_format($f['MontoOriginal'],2,',','.')?>',
 				            	'<?=number_format($f['MontoNoAfecto'],2,',','.')?>',
-				            	'<?=number_format($f['FactorPorcentaje'],2,',','.')?>',
+				            	'<?=$f['FactorPorcentaje']?>',
 				            	'<?=number_format($f['MontoIva'],2,',','.')?>',
 				            	'0,00',
 				            	'<?=number_format($f['TotalMontoIva'],2,',','.')?>',
 				            	'<?=number_format($f['TotalMontoIva'],2,',','.')?>',
 				            	'<?=$f['CodTipoPago']?>',
+								'<?=htmlentities($f['Descripcion'])?>',
 				            ],
 			            	[
 				            	'Anio',
@@ -405,6 +414,7 @@ $_width = 900;
 				            	'MontoTotal',
 				            	'SaldoAdelanto',
 				            	'CodTipoPago',
+				            	'Descripcion',
 			            	]);">
 			            <?php
 					}
