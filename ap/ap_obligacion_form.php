@@ -789,6 +789,7 @@ elseif ($opcion == "adelanto-generar") {
 				'' AS CodPresupuesto,
 				'N' AS FlagNomina,
 				'N' AS FlagFacturaPendiente,
+				'N' AS FlagCajaChica,
 				'' AS CodFuente,
 				SUBSTRING(ga.Periodo, 1, 4) AS Ejercicio,
 				'' AS CategoriaProg,
