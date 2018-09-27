@@ -50,6 +50,18 @@ if (mysql_num_rows($query_periodo) != 0) $field_periodo = mysql_fetch_array($que
 $sql = "SELECT CodSistemaFuente FROM mastaplicaciones WHERE CodAplicacion = 'AP'";
 $query_prefpa = mysql_query($sql) or die ($sql.mysql_error());
 if (mysql_num_rows($query_prefpa) != 0) $field_prefpa = mysql_fetch_array($query_prefpa);
+
+#Ordenes de pago
+$Concepto = '';
+$sql = "SELECT *
+		FROM ap_ordenpago
+		WHERE
+			NroProceso = '$NroProceso'
+			AND Secuencia = '$Secuencia'";
+$field_op = getRecords($sql);
+foreach ($field_op as $fop) {
+	$Concepto .= $fop['Concepto'] . ".";
+}
 ?>
 
 <form name="frmentrada" id="frmentrada" method="POST" onsubmit="return vouchers_pago(this, 'pagos', 'li1');">
@@ -127,7 +139,7 @@ if (mysql_num_rows($query_prefpa) != 0) $field_prefpa = mysql_fetch_array($query
                         </select>
                     </td>
                     <td class="tagForm">Descripci&oacute;n:</td>
-                    <td><input type="text" id="ComentariosVoucher" style="width:305px;" value="<?=($field_mast['Comentarios'])?>" <?=$disabled_ver?> /></td>
+                    <td><input type="text" id="ComentariosVoucher" style="width:305px;" value="<?=($Concepto)?>" <?=$disabled_ver?> /></td>
                 </tr>
                 <tr>
                     <td class="tagForm">* Fecha:</td>

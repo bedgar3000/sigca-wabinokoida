@@ -257,7 +257,7 @@ function obligacion(form, accion) {
 				});
 				$('#cajaModal').html('El periodo de la obligación es distinta al Periodo Actual,<br />¿Continuar de todas formas?');
 				$('#cajaModal').dialog('open');
-			} obligacion_ajax(form, accion, url);
+			} else obligacion_ajax(form, accion, url);
 		} 
 		else {
 			obligacion_ajax(form, accion, url);

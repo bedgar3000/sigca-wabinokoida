@@ -439,7 +439,7 @@ elseif ($modulo == "orden_pago") {
 					FlagPagoDiferido = 'N',
 					Periodo = '".$Periodo."',
 					GeneradoPor = '".$_SESSION["CODPERSONA_ACTUAL"]."',
-					RevisadoPor = '".getPersonaUnidadEjecutora($_PARAMETRO["CATADM"])."',
+					RevisadoPor = '".$_PARAMETRO["FIRMAOP3"]."',
 					ConformadoPor = '".getPersonaUnidadEjecutora($_PARAMETRO["CATADM"])."',
 					AprobadoPor = '".getPersonaUnidadEjecutora($_PARAMETRO["CATMAX"])."',
 					UltimoUsuario = '".$_SESSION["USUARIO_ACTUAL"]."',
