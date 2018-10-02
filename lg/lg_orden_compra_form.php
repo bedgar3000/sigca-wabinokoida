@@ -1,4 +1,6 @@
 <?php
+$error_impuesto = false;
+$error = "";
 if ($opcion == "nuevo") {
 	$accion = "nuevo";
 	$titulo = "Nueva Orden de Compra";
@@ -19,6 +21,8 @@ if ($opcion == "nuevo") {
 	$field_orden['FechaOrden'] = substr($Ahora, 0, 10);
 	$field_orden['PlazoEntrega'] = $_PARAMETRO['DIAENTOC'];
 	$field_orden['FechaPrometida'] = formatFechaAMD(getFechaFin(formatFechaDMA(substr($Ahora, 0, 10)), $_PARAMETRO['DIAENTOC']));
+	$field_orden['CodTipoServicio'] = $_PARAMETRO['DEFTSERCC'];
+	$field_orden['FactorImpuesto'] = number_format(getPorcentajeIVA($field_orden['CodTipoServicio']),2);
 	//	organismo
 	$sql = "SELECT * FROM mastorganismos WHERE CodOrganismo = '".$_SESSION['ORGANISMO_ACTUAL']."'";
 	$query_organismo = mysql_query($sql) or die(getErrorSql(mysql_errno(), mysql_error(), $sql));
@@ -55,7 +59,6 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
 	//	consulto datos generales	
 	$sql = "SELECT
 				oc.*,
-				mp.CodTipoServicio,
 				ts.Descripcion AS NomTipoServicio,
 				i.FactorPorcentaje,
 				mp1.NomCompleto AS NomPreparadaPor,
@@ -68,7 +71,7 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
 			FROM
 				lg_ordencompra oc
 				INNER JOIN mastproveedores mp ON (oc.CodProveedor = mp.CodProveedor)
-				INNER JOIN masttiposervicio ts ON (mp.CodTipoServicio = ts.CodTipoServicio)
+				INNER JOIN masttiposervicio ts ON (oc.CodTipoServicio = ts.CodTipoServicio)
 				LEFT JOIN masttiposervicioimpuesto tsi ON (ts.CodTipoServicio = tsi.CodTipoServicio)
 				LEFT JOIN mastimpuestos i ON (tsi.CodImpuesto = i.CodImpuesto)
 				LEFT JOIN mastpersonas mp1 ON (oc.PreparadaPor = mp1.CodPersona)
@@ -186,6 +189,11 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
 	$disabled_commodity = $disabled_ver;
 	if (!afectaTipoServicio($field_orden['CodTipoServicio'])) { $dFlagExonerado = "disabled"; $cFlagExonerado = "checked"; }
 	$FactorImpuesto = getPorcentajeIVA($field_orden['CodTipoServicio']);
+	if ($FactorImpuesto <> $field_orden['FactorImpuesto']) {
+		$field_orden['FactorImpuesto'] = $FactorImpuesto;
+		$error_impuesto = true;
+		$error = "El Factor del impuesto almacenado por el Tipo de Servicio ha cambiado por lo que se actualizaron los montos. Debe guardar la Orden para que se almacenen los cambios.";
+	}
 }
 //	------------------------------------
 ?>
@@ -194,7 +202,19 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
 		<td class="titulo"><?=$titulo?></td>
 		<td align="right"><a class="cerrar" href="#" onclick="document.getElementById('frmentrada').submit()">[cerrar]</a></td>
 	</tr>
-</table><hr width="100%" color="#333333" /><br />
+</table><hr width="100%" color="#333333" />
+
+<center>
+	<div class="ui-widget" id="alert-error" style="display:none;">
+		<div class="ui-state-error ui-corner-all" style="width:1100px; text-align:left;">
+			<p>
+			<span class="ui-icon ui-icon-alert" style="float: left;"></span>
+			<strong><?=$error?></strong>
+			</p>
+		</div>
+	</div>
+	<br>
+</center>
 
 <table width="1100" align="center" cellpadding="0" cellspacing="0">
     <tr>
@@ -265,9 +285,8 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
 	    <tr>
 			<td class="tagForm">* Tipo de Servicio:</td>
 			<td>
-	        	<input type="hidden" id="FactorImpuesto" value="<?=$FactorImpuesto?>" />
-	            <select id="CodTipoServicio" style="width:150px;" <?=$disabled_ver?>>
-	                <?=loadSelect("masttiposervicio", "CodTipoServicio", "Descripcion", $field_orden['CodTipoServicio'], 1)?>
+	            <select id="CodTipoServicio" style="width:150px;" <?=$disabled_ver?> onchange="setTipoServicio(this.value);">
+	                <?=loadSelect2("masttiposervicio", "CodTipoServicio", "Descripcion", $field_orden['CodTipoServicio'], 0, ['CodRegimenFiscal'], ['I'])?>
 	            </select>
 	        </td>
 	    	<td colspan="2" class="divFormCaption">Monto de la Compra</td>
@@ -318,6 +337,7 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
 	        <td class="tagForm">(+/-) Impuestos:</td>
 			<td>
 	        	<input type="text" id="MontoIGV" value="<?=number_format($field_orden['MontoIGV'], 2, ',', '.')?>" style="width:150px; text-align:right;" onfocus="numeroFocus(this);" onblur="numeroBlur(this);" onchange="setNuevoMontoIvaOC();" <?=$disabled_ver?> />
+				<input type="text" id="FactorImpuesto" value="<?=number_format($field_orden['FactorImpuesto'],2)?>" style="text-align:right; width:35px;" disabled />
 	        </td>
 		</tr>
 	    <tr>
@@ -541,7 +561,7 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
 			}
 			$disabled_descripcion = $disabled_ver;
 			$PrecioUnitTotal = $field_detalles['PrecioUnit'] - $field_detalles['DescuentoFijo'] - ($field_detalles['PrecioUnit'] * $field_detalles['DescuentoPorcentaje'] / 100);
-			$PrecioUnitTotal = $PrecioUnitTotal + ($PrecioUnitTotal * $FactorImpuesto / 100);
+			$PrecioUnitTotal = $PrecioUnitTotal + ($PrecioUnitTotal * $field_orden['FactorImpuesto'] / 100);
 			?>
 			<tr class="trListaBody" onclick="mClk(this, 'sel_detalles');" id="detalles_<?=$nrodetalles?>">
 				<th align="center">
@@ -1160,5 +1180,39 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
 <script type="text/javascript" language="javascript">
 	$(document).ready(function(){
 		$(".submt").css("visibility", "visible").prop("disabled", false);
+
+		<?php
+		if ($error) {
+			?>
+			$('#alert-error').css('display','block');
+			<?php
+		}
+		if ($error_impuesto) {
+			?>
+			setMontosOrdenCompra(document.getElementById('frm_detalles'));
+			<?php
+		}
+		?>
 	});
+	
+	/**
+	 * Cambio de tipo de servicio
+	 * @param CodTipoServicio 	(Tipo de servicio seleccionado)
+	 */
+	function setTipoServicio(CodTipoServicio) {
+		$.ajax({
+			type: "POST",
+			url: "../lib/fphp_funciones_ajax.php",
+			data: "accion=getPorcentajeIVA&CodTipoServicio="+CodTipoServicio,
+			async: false,
+			dataType: 'json',
+			success: function(data) {
+				if (data.status == 'success') {
+					$('#FactorImpuesto').val(data.FactorPorcentaje);
+
+					setMontosOrdenCompra(document.getElementById('frm_detalles'));
+				}
+			}
+		});
+	}
 </script>

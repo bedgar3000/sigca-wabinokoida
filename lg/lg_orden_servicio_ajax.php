@@ -54,6 +54,7 @@ if ($modulo == "orden_servicio") {
 					CodPresupuesto = '".$CodPresupuesto."',
 					Ejercicio = '".$Ejercicio."',
 					CodFuente = '".$CodFuente."',
+					FactorImpuesto = '".$FactorImpuesto."',
 					Estado = '".$Estado."',
 					UltimoUsuario = '".$_SESSION["USUARIO_ACTUAL"]."',
 					UltimaFecha = NOW()";
@@ -352,6 +353,7 @@ if ($modulo == "orden_servicio") {
 					CodCuentaPub20 = '".$CodCuentaPub20."',
 					cod_partida = '".$cod_partida."',
 					CodPresupuesto = '".$CodPresupuesto."',
+					FactorImpuesto = '".$FactorImpuesto."',
 					UltimoUsuario = '".$_SESSION["USUARIO_ACTUAL"]."',
 					UltimaFecha = NOW()
 				WHERE

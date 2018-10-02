@@ -637,8 +637,11 @@ function selListadoOrdenCompraPersona(CodPersona) {
 			parent.$("#NomProveedor").val(datos[0]);
 			parent.$("#CodFormaPago").val(datos[2]);
 			parent.$("#FactorImpuesto").val(datos[3]);
-			parent.$("#CodTipoServicio").html("").append(datos[4]);
-			parent.document.getElementById("CodTipoServicio").value = datos[1];
+			parent.$('#CodTipoServicio').val(datos[1]);
+			if (parent.$('#CodTipoServicio').val() != datos[1]) {
+				parent.$("#CodTipoServicio").html("").append(datos[4]);
+				parent.$('#CodTipoServicio').val(datos[1]);
+			}
 			parent.$("#btItem").removeAttr("disabled");
 			parent.$("#btCommodity").removeAttr("disabled");
 			parent.$.prettyPhoto.close();
@@ -662,8 +665,11 @@ function selListadoOrdenServicioPersona(CodPersona) {
 			parent.$("#CodFormaPago").val(datos[2]);
 			parent.$("#CodTipoPago").val(datos[3]);
 			parent.$("#FactorImpuesto").val(datos[4]);
-			parent.$("#CodTipoServicio").html("").append(datos[5]);
-			parent.document.getElementById("CodTipoServicio").value = datos[1];
+			parent.$('#CodTipoServicio').val(datos[1]);
+			if (parent.$('#CodTipoServicio').val() != datos[1]) {
+				parent.$("#CodTipoServicio").html("").append(datos[5]);
+				parent.$('#CodTipoServicio').val(datos[1]);
+			}
 			parent.$("#btCommodity").removeAttr("disabled");
 			parent.$.prettyPhoto.close();
 		}
@@ -1829,4 +1835,24 @@ function abrir_selector(detalle, inputs, href, selector) {
         selector.attr('href', href);
         selector.click();
     }
+}
+
+/**
+ * Obtener el factor del impuesto
+ * @param CodTipoServicio 	(Tipo de servicio seleccionado)
+ * @param $input			(Input que recibira el valor del porcentaje)
+ */
+function getPorcentajeIVA(CodTipoServicio, $input) {
+	$.ajax({
+		type: "POST",
+		url: "../lib/fphp_funciones_ajax.php",
+		data: "accion=getPorcentajeIVA&CodTipoServicio="+CodTipoServicio,
+		async: false,
+		dataType: 'json',
+		success: function(data) {
+			if (data.status == 'success') {
+				$input.val(data.FactorPorcentaje);
+			}
+		}
+	});
 }

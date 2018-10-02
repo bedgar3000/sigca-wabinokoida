@@ -1674,7 +1674,7 @@ elseif ($accion == "selListadoOrdenCompraPersona") {
 	$FactorImpuesto = getPorcentajeIVA($field_proveedor['CodTipoServicio']);
 	
 	//	valores
-	echo "$field_proveedor[NomCompleto]|$field_proveedor[CodTipoServicio]|$field_proveedor[CodFormaPago]|$FactorImpuesto|";
+	echo "$field_proveedor[NomCompleto]|$field_proveedor[CodTipoServicio]|$field_proveedor[CodFormaPago]|".number_format($FactorImpuesto,2)."|";
 	loadSelect("masttiposervicio", "CodTipoServicio", "Descripcion", $field_proveedor['CodTipoServicio'], 1);
 }
 
@@ -1697,8 +1697,17 @@ elseif ($accion == "selListadoOrdenServicioPersona") {
 	$FactorImpuesto = getPorcentajeIVA($field_proveedor['CodTipoServicio']);
 	
 	//	valores
-	echo "$field_proveedor[NomCompleto]|$field_proveedor[CodTipoServicio]|$field_proveedor[CodFormaPago]|$field_proveedor[CodTipoPago]|$FactorImpuesto|";
+	echo "$field_proveedor[NomCompleto]|$field_proveedor[CodTipoServicio]|$field_proveedor[CodFormaPago]|$field_proveedor[CodTipoPago]|".number_format($FactorImpuesto,2)."|";
 	loadSelect("masttiposervicio", "CodTipoServicio", "Descripcion", $field_proveedor['CodTipoServicio'], 1);
+}
+
+elseif ($accion == "getPorcentajeIVA") {
+	$FactorPorcentaje = getPorcentajeIVA($CodTipoServicio);
+
+	die(json_encode([
+		'status' => 'success',
+		'FactorPorcentaje' => number_format($FactorPorcentaje,2),
+	]));
 }
 
 elseif ($accion == "afectaTipoServicio") {

@@ -81,8 +81,6 @@ $dfsittra = "disabled";
 <center><input type="submit" name="btBuscar" value="Buscar"></center>
 </form>
 
-
-
 <script type="text/javascript">
     function txtNomina(form) {
         var num = 0;
@@ -101,7 +99,7 @@ $dfsittra = "disabled";
         else {
             //  CREO UN OBJETO AJAX PARA VERIFICAR QUE EL NUEVO REGISTRO NO EXISTA EN LA BASE DE DATOS
             var ajax=nuevoAjax();
-            ajax.open("POST", "txt_nomina_venezuela.php", true);
+            ajax.open("POST", "txt_nomina_caroni.php", true);
             ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
             ajax.send("codproceso="+codproceso+"&nomproceso="+nomproceso+"&periodo="+periodo+"&organismo="+organismo+"&nombre_archivo="+nombre_archivo+"&fCodTipoNom="+fCodTipoNom);
             ajax.onreadystatechange=function() {
@@ -113,7 +111,5 @@ $dfsittra = "disabled";
         return false;
     }
 </script>
-
-
 </body>
 </html>

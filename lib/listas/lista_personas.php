@@ -177,176 +177,176 @@ if (!empty($_APLICACION))
 	    </thead>
 	    
 	    <tbody>
-		<?php
-		//	consulto todos
-		$sql = "SELECT *
-				FROM
-					mastpersonas p
-					LEFT JOIN mastempleado em On (em.CodPersona = p.CodPersona)
-					LEFT JOIN mastcliente cl ON (cl.CodPersona = p.CodPersona)
-					LEFT JOIN mastciudades c ON (c.CodCiudad = p.CiudadDomicilio)
-					LEFT JOIN mastmunicipios m ON (m.CodMunicipio = c.CodMunicipio)
-					LEFT JOIN mastestados e ON (e.CodEstado = m.CodEstado)
-					LEFT JOIN mastpaises pi ON (pi.CodPais = e.CodPais)
-					LEFT JOIN mastmiscelaneosdet md1 ON (
-						md1.CodDetalle = cl.FormaFactura
-						AND md1.CodMaestro = 'FORMAFACT'
-					)
-					LEFT JOIN co_vendedor v ON v.CodPersona = p.CodPersona
-					LEFT JOIN co_rutadespacho rd ON rd.CodRutaDespacho = cl.CodRutaDespacho
-					LEFT JOIN mastparroquias pr ON pr.CodParroquia = rd.CodParroquia
-					LEFT JOIN mastproveedores po ON po.CodProveedor = p.CodPersona
-				WHERE 1 $filtro";
-		$rows_total = getNumRows3($sql);
-		//	consulto lista
-		$sql = "SELECT
-					p.*,
-					em.CodEmpleado,
-					em.Usuario,
-					em.Fingreso,
-					m.CodMunicipio,
-					e.CodEstado,
-					pi.CodPais,
-					cl.CodTipoDocumento,
-					cl.FormaFactura,
-					cl.TipoVenta,
-					cl.CodFormaPago,
-					cl.CodRutaDespacho,
-					cl.CodVendedor AS CodClienteVendedor,
-					md1.Descripcion AS NomFormaFactura,
-					'' AS CodComunidad,
-					'' AS Comunidad,
-					rd.CodParroquia,
-					pr.Descripcion AS Parroquia,
-					v.CodPersona AS CodPersonaVendedor,
-					po.CodTipoPago,
-					po.CodTipoServicio
-				FROM
-					mastpersonas p
-					LEFT JOIN mastempleado em On (em.CodPersona = p.CodPersona)
-					LEFT JOIN mastcliente cl ON (cl.CodPersona = p.CodPersona)
-					LEFT JOIN mastciudades c ON (c.CodCiudad = p.CiudadDomicilio)
-					LEFT JOIN mastmunicipios m ON (m.CodMunicipio = c.CodMunicipio)
-					LEFT JOIN mastestados e ON (e.CodEstado = m.CodEstado)
-					LEFT JOIN mastpaises pi ON (pi.CodPais = e.CodPais)
-					LEFT JOIN mastmiscelaneosdet md1 ON (
-						md1.CodDetalle = cl.FormaFactura
-						AND md1.CodMaestro = 'FORMAFACT'
-					)
-					LEFT JOIN co_vendedor v ON v.CodPersona = p.CodPersona
-					LEFT JOIN co_rutadespacho rd ON rd.CodRutaDespacho = cl.CodRutaDespacho
-					LEFT JOIN mastparroquias pr ON pr.CodParroquia = rd.CodParroquia
-					LEFT JOIN mastproveedores po ON po.CodProveedor = p.CodPersona
-				WHERE 1 $filtro
-				ORDER BY $fOrderBy
-				LIMIT ".intval($limit).", ".intval($maxlimit);
-		$field = getRecords($sql);
-		$rows_lista = count($field);
-		foreach($field as $f) {
-			if ($ventana == "Ndocumento") 
-			{
-				?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['Ndocumento']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>']);"><?php
-			}
-			elseif ($ventana == "DocFiscal") 
-			{
-				?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>']);"><?php
-			}
-			elseif ($ventana == "selListadoListaParent") 
-			{
-				?><tr class="trListaBody" onclick="<?=$ventana?>('<?=$seldetalle?>',['<?=$campo1?>','<?=$campo2?>'],['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>']);" id="<?=$f['CodPersona']?>"><?php
-			}
-			elseif ($ventana == "ha_contribuyentes") 
-			{
-				?><tr class="trListaBody" onClick="<?=$ventana?>(['<?=$f['CodPersona']?>','<?=$f['Ndocumento']?>','<?=htmlentities($f['NomCompleto'])?>','<?=htmlentities($f['NomCompleto'])?>','<?=htmlentities($f['Direccion'])?>','<?=$f['Telefono1']?>','<?=$f['Telefono2']?>','<?=$f['Email']?>','<?=$f['TipoPersona']?>','<?=$f['CodPais']?>','<?=$f['CodEstado']?>','<?=$f['CodMunicipio']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>','<?=$campo7?>','<?=$campo8?>','<?=$campo9?>','<?=$campo10?>','<?=$campo11?>']);"><?php
-			}
-			elseif ($ventana == "propietario") 
-			{
-				?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=$f['Ndocumento']?>','<?=htmlentities($f['NomCompleto'])?>','<?=htmlentities($f['Direccion'])?>','<?=$f['Telefono1']?>','<?=$f['Telefono2']?>','<?=$f['Email']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>','<?=$campo7?>']);"><?php
-			}
-			elseif ($ventana == 'listado_insertar_linea') 
-			{
-				?><tr class="trListaBody" onClick="<?=$ventana?>('<?=$detalle?>','modulo=<?=$modulo?>&accion=<?=$accion?>&CodPersona=<?=$f['CodPersona']?>&CodOrganismo=<?=$CodOrganismo?>&CodPresupuesto=<?=$CodPresupuesto?>&detalle=<?=$detalle?>','<?=$f['CodPersona']?>','<?=$url?>');"><?php
-			}
-			elseif ($ventana == 'empleados') 
-			{
-				?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['CodEmpleado']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>']);"><?php
-			}
-			elseif ($ventana == 'co_cotizacion') 
-			{
-				?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>','<?=$f['Direccion']?>','<?=$f['CodClienteVendedor']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>']);"><?php
-			}
-			elseif ($ventana == 'co_documento') 
-			{
-				?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>','<?=$f['Direccion']?>','<?=$f['FormaFactura']?>','<?=$f['NomFormaFactura']?>','<?=$f['TipoVenta']?>','<?=$f['CodFormaPago']?>','<?=$f['CodRutaDespacho']?>','<?=$f['CodPersona']?>','<?=$f['CodParroquia']?>','<?=$f['Parroquia']?>','<?=$f['Telefono1']?>','<?=$f['CodClienteVendedor']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>','<?=$campo7?>','<?=$campo8?>','<?=$campo9?>','<?=$campo10?>','<?=$campo11?>','<?=$campo12?>','<?=$campo13?>','<?=$campo14?>']);"><?php
-			}
-			elseif ($ventana == 'co_pedidos') 
-			{
-				?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>','<?=$f['Direccion']?>','<?=$f['FormaFactura']?>','<?=$f['NomFormaFactura']?>','<?=$f['TipoVenta']?>','<?=$f['CodFormaPago']?>','<?=$f['CodRutaDespacho']?>','<?=$f['CodPersona']?>','<?=$f['CodClienteVendedor']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>','<?=$campo7?>','<?=$campo8?>','<?=$campo9?>','<?=$campo10?>','<?=$campo11?>']);"><?php
-			}
-			elseif ($ventana == 'co_cobranza') 
-			{
-				?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>','<?=$f['CodClienteVendedor']?>','<?=$f['CodClienteVendedor']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>']);"><?php
-			}
-			elseif ($ventana == 'co_cajeros') 
-			{
-				?><tr class="trListaBody" onClick="co_cajeros(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['CodPersonaVendedor']?>','<?=$f['Fingreso']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>']);"><?php
-			}
-			elseif ($ventana == 'usuarios') 
-			{
-				?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['CodEmpleado']?>','<?=$f['Usuario']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>']);"><?php
-			}
-			elseif ($ventana == 'lg_choferes') 
-			{
-				?><tr class="trListaBody" onClick="lg_choferes(['<?=$f['CodPersona']?>','<?=$f['Ndocumento']?>','<?=htmlentities($f['Apellido1'])?>','<?=htmlentities($f['Apellido2'])?>','<?=htmlentities($f['Nombres'])?>','<?=$f['EstadoCivil']?>','<?=$f['Telefono1']?>','<?=$f['Telefono2']?>','<?=htmlentities($f['Direccion'])?>','<?=$f['CiudadDomicilio']?>','<?=$f['CodMunicipio']?>','<?=$f['CodEstado']?>','<?=$f['CodPais']?>','<?=$f['TipoLicencia']?>','<?=$f['Nlicencia']?>','<?=formatFechaDMA($f['ExpiraLicencia'])?>','<?=formatFechaDMA($f['Fnacimiento'])?>','<?=$f['Sexo']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>','<?=$campo7?>','<?=$campo8?>','<?=$campo9?>','<?=$campo10?>','<?=$campo11?>','<?=$campo12?>','<?=$campo13?>','<?=$campo14?>','<?=$campo15?>','<?=$campo16?>','<?=$campo17?>','<?=$campo18?>']);"><?php
-			}
-			elseif ($ventana == 'lg_guiaremision') 
-			{
-				?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>','<?=htmlentities($f['Direccion'])?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>']);"><?php
-			}
-			elseif ($ventana == 'selListaOpener') 
-			{
-				?><tr class="trListaBody" onClick="<?=$ventana?>(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>'], ['<?=$campo1?>','<?=$campo2?>']);"><?php
-			}
-			elseif ($ventana == 'filtro') 
-			{
-				?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>']);"><?php
-			}
-			elseif ($ventana == 'pagara') 
-			{
-				?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>','<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>']);"><?php
-			}
-			elseif ($ventana == 'selListaGastoAdelanto') 
-			{
-				?><tr class="trListaBody" onClick="selListaGastoAdelanto(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>','<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>','<?=$f['CodTipoPago']?>','<?=$f['CodTipoServicio']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>','<?=$campo7?>','<?=$campo8?>']);"><?php
-			}
-			elseif ($ventana == "selListadoOrdenCompraPersona") {
-				?><tr class="trListaBody" onclick="selListadoOrdenCompraPersona('<?=$f['CodPersona']?>');" id="<?=$f['CodPersona']?>"><?php 
-			}
-			elseif ($ventana == "selListadoOrdenServicioPersona") {
-				?><tr class="trListaBody" onclick="selListadoOrdenServicioPersona('<?=$f['CodPersona']?>');" id="<?=$f['CodPersona']?>"><?php 
-			}
-			elseif ($ventana == "co_comitelocal") 
-			{
-				?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['Ndocumento']?>','<?=htmlentities($f['Direccion'])?>','<?=$f['Telefono1']?>','<?=$f['Telefono2']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>']);"><?php
-			}
-			else 
-			{
-				?><tr class="trListaBody" onClick="<?=$ventana?>(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>'], ['<?=$campo1?>','<?=$campo2?>']);"><?php
+			<?php
+			//	consulto todos
+			$sql = "SELECT *
+					FROM
+						mastpersonas p
+						LEFT JOIN mastempleado em On (em.CodPersona = p.CodPersona)
+						LEFT JOIN mastcliente cl ON (cl.CodPersona = p.CodPersona)
+						LEFT JOIN mastciudades c ON (c.CodCiudad = p.CiudadDomicilio)
+						LEFT JOIN mastmunicipios m ON (m.CodMunicipio = c.CodMunicipio)
+						LEFT JOIN mastestados e ON (e.CodEstado = m.CodEstado)
+						LEFT JOIN mastpaises pi ON (pi.CodPais = e.CodPais)
+						LEFT JOIN mastmiscelaneosdet md1 ON (
+							md1.CodDetalle = cl.FormaFactura
+							AND md1.CodMaestro = 'FORMAFACT'
+						)
+						LEFT JOIN co_vendedor v ON v.CodPersona = p.CodPersona
+						LEFT JOIN co_rutadespacho rd ON rd.CodRutaDespacho = cl.CodRutaDespacho
+						LEFT JOIN mastparroquias pr ON pr.CodParroquia = rd.CodParroquia
+						LEFT JOIN mastproveedores po ON po.CodProveedor = p.CodPersona
+					WHERE 1 $filtro";
+			$rows_total = getNumRows3($sql);
+			//	consulto lista
+			$sql = "SELECT
+						p.*,
+						em.CodEmpleado,
+						em.Usuario,
+						em.Fingreso,
+						m.CodMunicipio,
+						e.CodEstado,
+						pi.CodPais,
+						cl.CodTipoDocumento,
+						cl.FormaFactura,
+						cl.TipoVenta,
+						cl.CodFormaPago,
+						cl.CodRutaDespacho,
+						cl.CodVendedor AS CodClienteVendedor,
+						md1.Descripcion AS NomFormaFactura,
+						'' AS CodComunidad,
+						'' AS Comunidad,
+						rd.CodParroquia,
+						pr.Descripcion AS Parroquia,
+						v.CodPersona AS CodPersonaVendedor,
+						po.CodTipoPago,
+						po.CodTipoServicio
+					FROM
+						mastpersonas p
+						LEFT JOIN mastempleado em On (em.CodPersona = p.CodPersona)
+						LEFT JOIN mastcliente cl ON (cl.CodPersona = p.CodPersona)
+						LEFT JOIN mastciudades c ON (c.CodCiudad = p.CiudadDomicilio)
+						LEFT JOIN mastmunicipios m ON (m.CodMunicipio = c.CodMunicipio)
+						LEFT JOIN mastestados e ON (e.CodEstado = m.CodEstado)
+						LEFT JOIN mastpaises pi ON (pi.CodPais = e.CodPais)
+						LEFT JOIN mastmiscelaneosdet md1 ON (
+							md1.CodDetalle = cl.FormaFactura
+							AND md1.CodMaestro = 'FORMAFACT'
+						)
+						LEFT JOIN co_vendedor v ON v.CodPersona = p.CodPersona
+						LEFT JOIN co_rutadespacho rd ON rd.CodRutaDespacho = cl.CodRutaDespacho
+						LEFT JOIN mastparroquias pr ON pr.CodParroquia = rd.CodParroquia
+						LEFT JOIN mastproveedores po ON po.CodProveedor = p.CodPersona
+					WHERE 1 $filtro
+					ORDER BY $fOrderBy
+					LIMIT ".intval($limit).", ".intval($maxlimit);
+			$field = getRecords($sql);
+			$rows_lista = count($field);
+			foreach($field as $f) {
+				if ($ventana == "Ndocumento") 
+				{
+					?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['Ndocumento']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>']);"><?php
+				}
+				elseif ($ventana == "DocFiscal") 
+				{
+					?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>']);"><?php
+				}
+				elseif ($ventana == "selListadoListaParent") 
+				{
+					?><tr class="trListaBody" onclick="<?=$ventana?>('<?=$seldetalle?>',['<?=$campo1?>','<?=$campo2?>'],['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>']);" id="<?=$f['CodPersona']?>"><?php
+				}
+				elseif ($ventana == "ha_contribuyentes") 
+				{
+					?><tr class="trListaBody" onClick="<?=$ventana?>(['<?=$f['CodPersona']?>','<?=$f['Ndocumento']?>','<?=htmlentities($f['NomCompleto'])?>','<?=htmlentities($f['NomCompleto'])?>','<?=htmlentities($f['Direccion'])?>','<?=$f['Telefono1']?>','<?=$f['Telefono2']?>','<?=$f['Email']?>','<?=$f['TipoPersona']?>','<?=$f['CodPais']?>','<?=$f['CodEstado']?>','<?=$f['CodMunicipio']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>','<?=$campo7?>','<?=$campo8?>','<?=$campo9?>','<?=$campo10?>','<?=$campo11?>']);"><?php
+				}
+				elseif ($ventana == "propietario") 
+				{
+					?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=$f['Ndocumento']?>','<?=htmlentities($f['NomCompleto'])?>','<?=htmlentities($f['Direccion'])?>','<?=$f['Telefono1']?>','<?=$f['Telefono2']?>','<?=$f['Email']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>','<?=$campo7?>']);"><?php
+				}
+				elseif ($ventana == 'listado_insertar_linea') 
+				{
+					?><tr class="trListaBody" onClick="<?=$ventana?>('<?=$detalle?>','modulo=<?=$modulo?>&accion=<?=$accion?>&CodPersona=<?=$f['CodPersona']?>&CodOrganismo=<?=$CodOrganismo?>&CodPresupuesto=<?=$CodPresupuesto?>&detalle=<?=$detalle?>','<?=$f['CodPersona']?>','<?=$url?>');"><?php
+				}
+				elseif ($ventana == 'empleados') 
+				{
+					?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['CodEmpleado']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>']);"><?php
+				}
+				elseif ($ventana == 'co_cotizacion') 
+				{
+					?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>','<?=$f['Direccion']?>','<?=$f['CodClienteVendedor']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>']);"><?php
+				}
+				elseif ($ventana == 'co_documento') 
+				{
+					?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>','<?=$f['Direccion']?>','<?=$f['FormaFactura']?>','<?=$f['NomFormaFactura']?>','<?=$f['TipoVenta']?>','<?=$f['CodFormaPago']?>','<?=$f['CodRutaDespacho']?>','<?=$f['CodPersona']?>','<?=$f['CodParroquia']?>','<?=$f['Parroquia']?>','<?=$f['Telefono1']?>','<?=$f['CodClienteVendedor']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>','<?=$campo7?>','<?=$campo8?>','<?=$campo9?>','<?=$campo10?>','<?=$campo11?>','<?=$campo12?>','<?=$campo13?>','<?=$campo14?>']);"><?php
+				}
+				elseif ($ventana == 'co_pedidos') 
+				{
+					?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>','<?=$f['Direccion']?>','<?=$f['FormaFactura']?>','<?=$f['NomFormaFactura']?>','<?=$f['TipoVenta']?>','<?=$f['CodFormaPago']?>','<?=$f['CodRutaDespacho']?>','<?=$f['CodPersona']?>','<?=$f['CodClienteVendedor']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>','<?=$campo7?>','<?=$campo8?>','<?=$campo9?>','<?=$campo10?>','<?=$campo11?>']);"><?php
+				}
+				elseif ($ventana == 'co_cobranza') 
+				{
+					?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>','<?=$f['CodClienteVendedor']?>','<?=$f['CodClienteVendedor']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>']);"><?php
+				}
+				elseif ($ventana == 'co_cajeros') 
+				{
+					?><tr class="trListaBody" onClick="co_cajeros(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['CodPersonaVendedor']?>','<?=$f['Fingreso']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>']);"><?php
+				}
+				elseif ($ventana == 'usuarios') 
+				{
+					?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['CodEmpleado']?>','<?=$f['Usuario']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>']);"><?php
+				}
+				elseif ($ventana == 'lg_choferes') 
+				{
+					?><tr class="trListaBody" onClick="lg_choferes(['<?=$f['CodPersona']?>','<?=$f['Ndocumento']?>','<?=htmlentities($f['Apellido1'])?>','<?=htmlentities($f['Apellido2'])?>','<?=htmlentities($f['Nombres'])?>','<?=$f['EstadoCivil']?>','<?=$f['Telefono1']?>','<?=$f['Telefono2']?>','<?=htmlentities($f['Direccion'])?>','<?=$f['CiudadDomicilio']?>','<?=$f['CodMunicipio']?>','<?=$f['CodEstado']?>','<?=$f['CodPais']?>','<?=$f['TipoLicencia']?>','<?=$f['Nlicencia']?>','<?=formatFechaDMA($f['ExpiraLicencia'])?>','<?=formatFechaDMA($f['Fnacimiento'])?>','<?=$f['Sexo']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>','<?=$campo7?>','<?=$campo8?>','<?=$campo9?>','<?=$campo10?>','<?=$campo11?>','<?=$campo12?>','<?=$campo13?>','<?=$campo14?>','<?=$campo15?>','<?=$campo16?>','<?=$campo17?>','<?=$campo18?>']);"><?php
+				}
+				elseif ($ventana == 'lg_guiaremision') 
+				{
+					?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>','<?=htmlentities($f['Direccion'])?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>']);"><?php
+				}
+				elseif ($ventana == 'selListaOpener') 
+				{
+					?><tr class="trListaBody" onClick="<?=$ventana?>(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>'], ['<?=$campo1?>','<?=$campo2?>']);"><?php
+				}
+				elseif ($ventana == 'filtro') 
+				{
+					?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>']);"><?php
+				}
+				elseif ($ventana == 'pagara') 
+				{
+					?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>','<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>']);"><?php
+				}
+				elseif ($ventana == 'selListaGastoAdelanto') 
+				{
+					?><tr class="trListaBody" onClick="selListaGastoAdelanto(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>','<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['DocFiscal']?>','<?=$f['CodTipoPago']?>','<?=$f['CodTipoServicio']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>','<?=$campo7?>','<?=$campo8?>']);"><?php
+				}
+				elseif ($ventana == "selListadoOrdenCompraPersona") {
+					?><tr class="trListaBody" onclick="selListadoOrdenCompraPersona('<?=$f['CodPersona']?>');" id="<?=$f['CodPersona']?>"><?php 
+				}
+				elseif ($ventana == "selListadoOrdenServicioPersona") {
+					?><tr class="trListaBody" onclick="selListadoOrdenServicioPersona('<?=$f['CodPersona']?>');" id="<?=$f['CodPersona']?>"><?php 
+				}
+				elseif ($ventana == "co_comitelocal") 
+				{
+					?><tr class="trListaBody" onClick="selLista(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>','<?=$f['Ndocumento']?>','<?=htmlentities($f['Direccion'])?>','<?=$f['Telefono1']?>','<?=$f['Telefono2']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>']);"><?php
+				}
+				else 
+				{
+					?><tr class="trListaBody" onClick="<?=$ventana?>(['<?=$f['CodPersona']?>','<?=htmlentities($f['NomCompleto'])?>'], ['<?=$campo1?>','<?=$campo2?>']);"><?php
+				}
+				?>
+					<td align="center"><?=$f['CodPersona']?></td>
+					<td><?=htmlentities($f['NomCompleto'])?></td>
+					<td align="center"><?=printFlag($f['EsEmpleado'])?></td>
+					<td align="center"><?=printFlag($f['EsProveedor'])?></td>
+					<td align="center"><?=printFlag($f['EsCliente'])?></td>
+					<td align="center"><?=printFlag($f['EsOtros'])?></td>
+					<td><?=$f['Ndocumento']?></td>
+					<td><?=$f['DocFiscal']?></td>
+					<td align="center"><?=printValoresGeneral('ESTADO',$f['Estado'])?></td>
+				</tr>
+				<?php
 			}
 			?>
-				<td align="center"><?=$f['CodPersona']?></td>
-				<td><?=htmlentities($f['NomCompleto'])?></td>
-				<td align="center"><?=printFlag($f['EsEmpleado'])?></td>
-				<td align="center"><?=printFlag($f['EsProveedor'])?></td>
-				<td align="center"><?=printFlag($f['EsCliente'])?></td>
-				<td align="center"><?=printFlag($f['EsOtros'])?></td>
-				<td><?=$f['Ndocumento']?></td>
-				<td><?=$f['DocFiscal']?></td>
-				<td align="center"><?=printValoresGeneral('ESTADO',$f['Estado'])?></td>
-			</tr>
-			<?php
-		}
-		?>
 	    </tbody>
 	</table>
 </div>
