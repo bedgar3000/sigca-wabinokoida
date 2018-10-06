@@ -81,6 +81,12 @@ elseif ($origen == "obligacion-anulacion") {
 	if ($field['VoucherAnulPub20'] == "" || $field['Estado'] == "AN") { $li1 = "display:none;"; }
 	$li2 = "display:none;";
 }
+elseif ($origen == "orden-adelanto-total") {
+	list($CodOrganismo, $Periodo, $Voucher, $CodContabilidad) = explode("_", $registro);
+	
+	if ($_PARAMETRO['CONTONCO'] == "S") { $registrot = $registro; }
+	if ($_PARAMETRO['CONTPUB20'] == "S") { $registrof = $registro; }
+}
 if ($li1 == "display:none;") $_registro = $registrof; else $_registro = $registrot;
 ?>
 <form name="frmentrada" id="frmentrada" method="post" target="iReporte">
@@ -90,13 +96,16 @@ if ($li1 == "display:none;") $_registro = $registrof; else $_registro = $registr
             <div class="header">
             <ul id="tab">
             <!-- CSS Tabs -->
-            <li id="li1" onclick="current($(this));" class="current" style=" <?=$li1?>">
-                <a href="#" onclick="cargarPagina(document.getElementById('frmentrada'), 'gehen.php?anz=ap_voucher_form&registro=<?=$registrot?>&accion=<?=$accion?>');">Voucher Contable</a>
-            </li>
-        
-            <li id="li2" onclick="current($(this));" style=" <?=$li2?>">
-                <a href="#" onclick="cargarPagina(document.getElementById('frmentrada'), 'gehen.php?anz=ap_voucher_form&registro=<?=$registrof?>&accion=<?=$accion?>');">Voucher Contable (Pub. 20)</a>
-            </li>
+			<?php if ($_PARAMETRO['CONTONCO'] == "S") : ?>
+				<li id="li1" onclick="current($(this));" class="current" style=" <?=$li1?>">
+					<a href="#" onclick="cargarPagina(document.getElementById('frmentrada'), 'gehen.php?anz=ap_voucher_form&registro=<?=$registrot?>&accion=<?=$accion?>');">Voucher Contable</a>
+				</li>
+			<?php endif; ?>
+			<?php if ($_PARAMETRO['CONTPUB20'] == "S") : ?>
+				<li id="li2" onclick="current($(this));" style=" <?=$li2?>">
+					<a href="#" onclick="cargarPagina(document.getElementById('frmentrada'), 'gehen.php?anz=ap_voucher_form&registro=<?=$registrof?>&accion=<?=$accion?>');">Voucher Contable (Pub. 20)</a>
+				</li>
+			<?php endif; ?>
             </ul>
             </div>
         </td>

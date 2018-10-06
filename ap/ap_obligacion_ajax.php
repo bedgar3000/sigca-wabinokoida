@@ -1,7 +1,7 @@
 <?php
 include("../lib/fphp.php");
 include("lib/fphp.php");
-//	$__archivo = fopen("_"."$modulo-$accion.sql", "w+");
+	$__archivo = fopen("_"."$modulo-$accion.sql", "w+");
 ///////////////////////////////////////////////////////////////////////////////
 //	OBLIGACIONES (NUEVO, MODIFICAR, REVISAR, APROBAR, ANULAR)
 ///////////////////////////////////////////////////////////////////////////////
@@ -993,6 +993,15 @@ if ($modulo == "obligacion") {
 	//	aprobar
 	elseif ($accion == "aprobar") {
 		mysql_query("BEGIN");
+		##	----------------------
+		##	consulto la obligacion
+		$sql = "SELECT *
+				FROM ap_obligaciones
+				WHERE
+					CodProveedor = '$CodProveedor' AND
+					CodTipoDocumento = '$CodTipoDocumento' AND
+					NroDocumento = '$NroDocumento'";
+		$field_obligacion = getRecord($sql);
 		//	documentos
 		$sql = "SELECT *
 				FROM ap_documentos
@@ -1046,6 +1055,7 @@ if ($modulo == "obligacion") {
 					NroDocumento = '".$NroDocumento."'";
 		execute($sql);
 		//	inserto (orden de pago)
+		$MontoTotal = $field_obligacion['MontoObligacion'] - $field_obligacion['MontoAdelanto'];
 		$NroOrden = getCodigo("ap_ordenpago", "NroOrden", 10, "CodOrganismo", $CodOrganismo, "Anio", $Anio);
 		$sql = "INSERT INTO ap_ordenpago
 				SET
@@ -1067,7 +1077,7 @@ if ($modulo == "obligacion") {
 					Concepto = '".$Comentarios."',
 					NroCuenta = '".$NroCuenta."',
 					CodTipoPago = '".$CodTipoPago."',
-					MontoTotal = '".$MontoObligacion."',
+					MontoTotal = '".$MontoTotal."',
 					NroRegistro = '".$NroRegistro."',
 					FlagPagoDiferido = '".$FlagPagoDiferido."',
 					CodCentroCosto = '".$CodCentroCosto."',

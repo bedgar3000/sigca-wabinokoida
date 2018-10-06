@@ -2,7 +2,7 @@
 include("../../lib/fphp.php");
 include("fphp.php");
 //	$__archivo = fopen("_"."$modulo-$accion-".$AnioActual.$MesActual.$DiaActual."_".$HorasActual.$MinutosActual.$SegundosActual.".sql", "w+");
-//	$__archivo = fopen("_"."$modulo-$accion.sql", "w+");
+	$__archivo = fopen("_"."$modulo-$accion.sql", "w+");
 ///////////////////////////////////////////////////////////////////////////////
 //	PARA AJAX
 ///////////////////////////////////////////////////////////////////////////////
@@ -360,6 +360,7 @@ elseif ($modulo == "orden_pago") {
 	//	pre-pago
 	elseif ($accion == "preparar_prepago") {
 		mysql_query("BEGIN");
+		##	--------------------
 		list($DiaPago, $MesPago, $AnioPago) = split("[./-]", $FechaPago);
 		$Periodo = "$AnioPago-$MesPago";
 		$Anio = $AnioPago;
@@ -367,6 +368,10 @@ elseif ($modulo == "orden_pago") {
 		$NroProceso = getCodigo("ap_pagos", "NroProceso", 6);
 		$MontoPago = 0;
 		$MontoRetenido = 0;
+		$VOUCHER = [];
+		$ComentariosVoucher = "";
+		$Creditos = 0;
+		$Debitos = 0;
     	foreach ($orden as $registro) {
 			list($Anio, $CodOrganismo, $NroOrden) = split("[_]", $registro);
 			$sql = "SELECT
@@ -383,6 +388,9 @@ elseif ($modulo == "orden_pago") {
 						op.MontoTotal,
 						op.RevisadoPor,
 						op.AprobadoPor,
+						op.CodCentroCosto,
+						op.FechaDocumento,
+						op.Concepto,
 						o.MontoObligacion,
 						o.MontoImpuestoOtros
 					FROM
@@ -391,60 +399,259 @@ elseif ($modulo == "orden_pago") {
 														 op.CodTipoDocumento = o.CodTipoDocumento AND
 														 op.NroDocumento = o.NroDocumento)
 					WHERE
-						op.Anio = '".$Anio."' AND
-						op.CodOrganismo = '".$CodOrganismo."' AND
-						op.NroOrden = '".$NroOrden."'";
+						op.Anio = '$Anio' AND
+						op.CodOrganismo = '$CodOrganismo' AND
+						op.NroOrden = '$NroOrden'";
 			$field_op = getRecord($sql);
 			//	actualizo orden de pago
-			$sql = "UPDATE ap_ordenpago
-					SET
-						NroProceso = '".$NroProceso."',
-						Secuencia = '1',
-						Estado = 'GE',
-						UltimoUsuario = '".$_SESSION["USUARIO_ACTUAL"]."',
-						UltimaFecha = NOW()
-					WHERE
-						CodProveedor = '".$field_op['CodProveedor']."' AND
-						CodTipoDocumento = '".$field_op['CodTipoDocumento']."' AND
-						NroDocumento = '".$field_op['NroDocumento']."' AND
-						Estado = 'PE'";
-			execute($sql);
+			if ($field_op['MontoTotal'] > 0) {
+				$sql = "UPDATE ap_ordenpago
+						SET
+							NroProceso = '$NroProceso',
+							Secuencia = '1',
+							Estado = 'GE',
+							UltimoUsuario = '$_SESSION[USUARIO_ACTUAL]',
+							UltimaFecha = NOW()
+						WHERE
+							CodProveedor = '$field_op[CodProveedor]'
+							AND CodTipoDocumento = '$field_op[CodTipoDocumento]'
+							AND NroDocumento = '$field_op[NroDocumento]'
+							AND Estado = 'PE'";
+				execute($sql);
+			} else {
+				$ComentariosVoucher .= $field_op['Concepto'] . '. ';
+				$sql = "UPDATE ap_ordenpago
+						SET
+							Estado = 'PA',
+							UltimoUsuario = '$_SESSION[USUARIO_ACTUAL]',
+							UltimaFecha = NOW()
+						WHERE
+							CodProveedor = '$field_op[CodProveedor]'
+							AND CodTipoDocumento = '$field_op[CodTipoDocumento]'
+							AND NroDocumento = '$field_op[NroDocumento]'
+							AND Estado = 'PE'";
+				execute($sql);
+				##	generar voucher
+				if ($_PARAMETRO['CONTONCO'] == 'S') {
+					##	
+					$sql = "SELECT ABS(SUM(gai.MontoImpuesto)) AS Monto
+							FROM ap_obligacionesadelantos oa
+							INNER JOIN ap_gastoadelantoimpuesto gai ON gai.CodAdelanto = oa.CodAdelanto
+							WHERE
+								oa.CodProveedor = '$field_op[CodProveedor]'
+								AND oa.CodTipoDocumento = '$field_op[CodTipoDocumento]'
+								AND oa.NroDocumento = '$field_op[NroDocumento]'
+							GROUP BY gai.CodAdelanto";
+					$MontoImpuesto = getVar3($sql);
+					$MontoImpuesto = floatval($MontoImpuesto);
+					##	
+					$sql = "
+						(
+							SELECT
+								cb.CodCuenta,
+								o.ReferenciaTipoDocumento AS TipoOrden,
+								o.ReferenciaNroDocumento AS NroOrden,
+								pc.Descripcion AS NomCuenta,
+								(o.MontoObligacion - $MontoImpuesto) AS MontoVoucher,
+								pc.TipoSaldo,
+								pc.FlagReqCC,
+								'01' AS Orden,
+								'Haber' AS Columna
+							FROM ap_obligaciones o
+							INNER JOIN ap_ctabancaria cb ON (o.NroCuenta = cb.NroCuenta)
+							INNER JOIN ac_mastplancuenta pc ON (cb.CodCuenta = pc.CodCuenta)
+							WHERE
+								o.CodProveedor = '$field_op[CodProveedor]' AND
+								o.CodTipoDocumento = '$field_op[CodTipoDocumento]' AND
+								o.NroDocumento = '$field_op[NroDocumento]'
+							GROUP BY CodCuenta
+						)
+						UNION
+						(
+							SELECT
+								i.CodCuenta,
+								o.ReferenciaTipoDocumento AS TipoOrden,
+								o.ReferenciaNroDocumento AS NroOrden,
+								pc.Descripcion AS NomCuenta,
+								ABS(SUM(gai.MontoImpuesto)) AS MontoVoucher,
+								pc.TipoSaldo,
+								pc.FlagReqCC,
+								'02' AS Orden,
+								'Haber' AS Columna
+							FROM ap_obligacionesadelantos oa
+							INNER JOIN ap_gastoadelantoimpuesto gai ON gai.CodAdelanto = oa.CodAdelanto
+							INNER JOIN ap_obligaciones o ON (
+								oa.CodProveedor = o.CodProveedor
+								AND oa.CodTipoDocumento = o.CodTipoDocumento
+								AND oa.NroDocumento = o.NroDocumento
+							)
+							INNER JOIN mastimpuestos i ON (gai.CodImpuesto = i.CodImpuesto)
+							INNER JOIN ac_mastplancuenta pc ON (i.CodCuenta = pc.CodCuenta)
+							WHERE
+								i.FlagProvision = 'P' AND
+								oa.CodProveedor = '$field_op[CodProveedor]' AND
+								oa.CodTipoDocumento = '$field_op[CodTipoDocumento]' AND
+								oa.NroDocumento = '$field_op[NroDocumento]'
+							GROUP BY i.CodCuenta
+						)
+						UNION
+						(
+							SELECT
+								td.CodCuentaProv AS CodCuenta,
+								o.ReferenciaTipoDocumento AS TipoOrden,
+								o.ReferenciaNroDocumento AS NroOrden,
+								pc.Descripcion AS NomCuenta,
+								(o.MontoObligacion) AS MontoVoucher,
+								pc.TipoSaldo,
+								pc.FlagReqCC,
+								'03' AS Orden,
+								'Debe' AS Columna
+							FROM ap_obligaciones o
+							INNER JOIN ap_tipodocumento td ON (o.CodTipoDocumento = td.CodTipoDocumento)
+							INNER JOIN ac_mastplancuenta pc ON (td.CodCuentaProv = pc.CodCuenta)
+							WHERE
+								o.CodProveedor = '$field_op[CodProveedor]' AND
+								o.CodTipoDocumento = '$field_op[CodTipoDocumento]' AND
+								o.NroDocumento = '$field_op[NroDocumento]'
+							GROUP BY CodCuenta
+						)
+						ORDER BY Columna DESC, Orden, CodCuenta
+					";
+					$field_voucher = getRecords($sql);
+					foreach ($field_voucher as $fv) {
+						if ($fd['FlagReqCC'] == "S") $_CodCentroCosto[$CodCuenta] = $_PARAMETRO['CCOSTOVOUCHER']; else $_CodCentroCosto[$CodCuenta] = $fo['CodCentroCosto'];
+						$CodCuenta = $fv['CodCuenta'];
+						$MontoVoucher = (($fv['Columna'] == 'Debe') ? $fv['MontoVoucher'] : ($fv['MontoVoucher'] * -1));
+						$VOUCHER[$CodCuenta] = [
+							'CodCuenta' => $fv['CodCuenta'],
+							'Descripcion' => $fv['NomCuenta'],
+							'MontoVoucher' => $MontoVoucher,
+							'CodPersona' => $field_op['CodProveedor'],
+							'ReferenciaTipoDocumento' => 'OP',
+							'ReferenciaNroDocumento' => $field_op['NroOrden'],
+							'FechaVoucher' => $field_op['FechaDocumento'],
+							'Columna' => $fv['Columna'],
+							'CodCentroCosto' => (($fd['FlagReqCC'] == 'S') ? $_PARAMETRO['CCOSTOVOUCHER'] : $field_op['CodCentroCosto']),
+						];
+						if ($MontoVoucher > 0) $Creditos += $MontoVoucher;
+						else $Debitos += $MontoVoucher;
+					}
+				}
+			}
 			$MontoPago += $field_op['MontoTotal'];
 			$MontoRetenido += $field_op['MontoImpuestoOtros'];
 		}
 		//	inserto pago
-		$sql = "INSERT INTO ap_pagos
-				SET
-					NroProceso = '".$NroProceso."',
-					Secuencia = '1',
-					CodTipoPago = '".$field_op['CodTipoPago']."',
-					CodOrganismo = '".$field_op['CodOrganismo']."',
-					NroCuenta = '".$field_op['NroCuenta']."',
-					CodProveedor = '".$field_op['CodProveedor']."',
-					NroOrden = '".$field_op['NroOrden']."',
-					Anio = '".$field_op['Anio']."',
-					NomProveedorPagar = '".$field_op['NomProveedorPagar']."',
-					MontoPago = '".$MontoPago."',
-					MontoRetenido = '".$MontoRetenido."',
-					FechaPago = '".formatFechaAMD($FechaPago)."',
-					OrigenGeneracion = 'A',
-					Estado = 'GE',
-					EstadoEntrega = 'C',
-					EstadoChequeManual = '',
-					FlagContabilizacionPendiente = 'S',
-					FlagNegociacion = 'N',
-					FlagNoNegociable = 'N',
-					FlagCobrado = 'N',
-					FlagCertificadoImpresion = 'N',
-					FlagPagoDiferido = 'N',
-					Periodo = '".$Periodo."',
-					GeneradoPor = '".$_SESSION["CODPERSONA_ACTUAL"]."',
-					RevisadoPor = '".$_PARAMETRO["FIRMAOP3"]."',
-					ConformadoPor = '".getPersonaUnidadEjecutora($_PARAMETRO["CATADM"])."',
-					AprobadoPor = '".getPersonaUnidadEjecutora($_PARAMETRO["CATMAX"])."',
-					UltimoUsuario = '".$_SESSION["USUARIO_ACTUAL"]."',
-					UltimaFecha = NOW()";
-		execute($sql);
+		if ($MontoPago > 0) {
+			$sql = "INSERT INTO ap_pagos
+					SET
+						NroProceso = '".$NroProceso."',
+						Secuencia = '1',
+						CodTipoPago = '".$field_op['CodTipoPago']."',
+						CodOrganismo = '".$field_op['CodOrganismo']."',
+						NroCuenta = '".$field_op['NroCuenta']."',
+						CodProveedor = '".$field_op['CodProveedor']."',
+						NroOrden = '".$field_op['NroOrden']."',
+						Anio = '".$field_op['Anio']."',
+						NomProveedorPagar = '".$field_op['NomProveedorPagar']."',
+						MontoPago = '".$MontoPago."',
+						MontoRetenido = '".$MontoRetenido."',
+						FechaPago = '".formatFechaAMD($FechaPago)."',
+						OrigenGeneracion = 'A',
+						Estado = 'GE',
+						EstadoEntrega = 'C',
+						EstadoChequeManual = '',
+						FlagContabilizacionPendiente = 'S',
+						FlagNegociacion = 'N',
+						FlagNoNegociable = 'N',
+						FlagCobrado = 'N',
+						FlagCertificadoImpresion = 'N',
+						FlagPagoDiferido = 'N',
+						Periodo = '".$Periodo."',
+						GeneradoPor = '".$_SESSION["CODPERSONA_ACTUAL"]."',
+						RevisadoPor = '".$_PARAMETRO["FIRMAOP3"]."',
+						ConformadoPor = '".getPersonaUnidadEjecutora($_PARAMETRO["CATADM"])."',
+						AprobadoPor = '".getPersonaUnidadEjecutora($_PARAMETRO["CATMAX"])."',
+						UltimoUsuario = '".$_SESSION["USUARIO_ACTUAL"]."',
+						UltimaFecha = NOW()";
+			execute($sql);
+			echo "|";
+		}
+		if (count($VOUCHER) > 0) {
+			if ($_PARAMETRO['CONTONCO'] == 'S') {
+				$CodContabilidad = 'T';
+			}
+			$CodVoucher = '02';
+			//	genero nuevo voucher
+			$NroVoucher = getCodigo("ac_vouchermast", "NroVoucher", 4, "CodOrganismo", $CodOrganismo, "Periodo", $Periodo, "CodVoucher", $CodVoucher, "CodContabilidad", $CodContabilidad);
+			$NroInterno = getCodigo("ac_vouchermast", "NroInterno", 10);
+			$Voucher = "$CodVoucher-$NroVoucher";
+			$FechaVoucher = formatFechaAMD($FechaPago);
+			$sql = "SELECT CodSistemaFuente FROM mastaplicaciones WHERE CodAplicacion = 'AP'";
+			$CodSistemaFuente = getVar3($sql);
+			$CodDependencia = $_SESSION['DEPENDENCIA_ACTUAL'];
+			$Lineas = count($VOUCHER);
+
+			//	inserto voucher
+			$sql = "INSERT INTO ac_vouchermast
+					SET
+						CodOrganismo = '$CodOrganismo',
+						Periodo = '$Periodo',
+						Voucher = '$Voucher',
+						CodContabilidad = '$CodContabilidad',
+						Prefijo = '$CodVoucher',
+						NroVoucher = '$NroVoucher',
+						CodVoucher = '$CodVoucher',
+						CodDependencia = '$CodDependencia',
+						CodSistemaFuente = '$CodSistemaFuente',
+						Creditos = '$Creditos',
+						Debitos = '$Debitos',
+						Lineas = '$Lineas',
+						PreparadoPor = '$_SESSION[CODPERSONA_ACTUAL]',
+						FechaPreparacion = '$FechaVoucher',
+						AprobadoPor = '$_SESSION[CODPERSONA_ACTUAL]',
+						FechaAprobacion = '$FechaVoucher',
+						TituloVoucher = '$ComentariosVoucher',
+						ComentariosVoucher = '$ComentariosVoucher',
+						FechaVoucher = '$FechaVoucher',
+						NroInterno = '$NroInterno',
+						FlagTransferencia = 'N',
+						Estado = 'MA',
+						CodLibroCont = 'CO',
+						UltimoUsuario = '$_SESSION[USUARIO_ACTUAL]',
+						UltimaFecha = NOW()";
+			execute($sql);
+
+			$Linea = 0;
+			foreach($VOUCHER as $v) {
+				++$Linea;
+				$sql = "INSERT INTO ac_voucherdet
+						SET
+							CodOrganismo = '$CodOrganismo',
+							Periodo = '$Periodo',
+							Voucher = '$Voucher',
+							CodContabilidad = '$CodContabilidad',
+							Linea = '$Linea',
+							CodCuenta = '$v[CodCuenta]',
+							MontoVoucher = '$v[MontoVoucher]',
+							MontoPost = '$v[MontoVoucher]',
+							CodPersona = '$v[CodPersona]',
+							FechaVoucher = '$FechaVoucher',
+							CodCentroCosto = '$v[CodCentroCosto]',
+							ReferenciaTipoDocumento = '$v[ReferenciaTipoDocumento]',
+							ReferenciaNroDocumento = '$v[ReferenciaNroDocumento]',
+							NroCheque = '',
+							Descripcion = '$v[Descripcion]',
+							Estado = 'MA',
+							UltimoUsuario = '$_SESSION[USUARIO_ACTUAL]',
+							UltimaFecha = NOW()";
+				execute($sql);
+			}
+			echo "|$CodOrganismo"."_"."$Periodo"."_"."$Voucher"."_"."$CodContabilidad";
+		}
+		// mysql_query("ROLLBACK");
+		// die('');
+		##	--------------------
 		mysql_query("COMMIT");
 	}
 	//	imprimir/transferir
@@ -848,7 +1055,7 @@ elseif ($modulo == "orden_pago") {
 						NroCuenta = '".$NroCuenta."' AND
 						CodTipoPago = '".$CodTipoPago."'";
 			execute($sql);
-			##	delanto de proveedores
+			##	adelanto de proveedores
 			if ($field_op['CodTipoDocumento'] == 'APR') {
 				$sql = "UPDATE ap_gastoadelanto
 						SET Estado = 'PA'
@@ -1950,6 +2157,17 @@ elseif ($modulo == "pago") {
 							Anio = '".$field_op['Anio']."' AND
 							NroOrden = '".$field_op['NroOrden']."' AND
 							Estado = 'PA'";
+				execute($sql);
+			}
+			##	adelanto de proveedores
+			if ($field_op['CodTipoDocumento'] == 'APR') {
+				$sql = "UPDATE ap_gastoadelanto
+						SET Estado = 'GE'
+						WHERE
+							CodProveedor = '$field_op[CodProveedor]'
+							AND ObligacionTipoDocumento = '$field_op[CodTipoDocumento]'
+							AND ObligacionNroDocumento = '$field_op[NroDocumento]'
+							AND Estado = 'PA'";
 				execute($sql);
 			}
 		}

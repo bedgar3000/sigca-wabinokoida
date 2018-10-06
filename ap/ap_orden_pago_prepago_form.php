@@ -5,7 +5,7 @@
 	</tr>
 </table><hr width="100%" color="#333333" /><br />
 
-<form name="frmentrada" id="frmentrada" action="gehen.php?anz=ap_orden_pago_prepago_lista" method="POST" onsubmit="return preparar_prepago(this, '<?=$accion?>');">
+<form name="frmentrada" id="frmentrada" action="gehen.php?anz=ap_orden_pago_prepago_lista" method="POST" onsubmit="return validar_prepago(this, '<?=$accion?>');">
 <input type="hidden" name="concepto" id="concepto" value="<?=$concepto?>" />
 <input type="hidden" name="maxlimit" id="maxlimit" value="<?=$maxlimit?>" />
 <input type="hidden" name="lista" id="lista" value="<?=$lista?>" />
@@ -33,7 +33,7 @@
     <tr>
         <td align="right" width="125">Fecha de Proceso:</td>
         <td>
-        	<input type="text" id="FechaPago" value="<?=formatFechaDMA($FechaActual)?>" style="width:60px;" class="datepicker codigo" />
+        	<input type="text" name="FechaPago" id="FechaPago" value="<?=formatFechaDMA($FechaActual)?>" style="width:60px;" class="datepicker codigo" />
 		</td>
         <td align="right">
         	<input type="submit" style="width:75px;" value="Aceptar" id="btAceptar" disabled />
@@ -89,6 +89,7 @@
     
     <tbody>
     	<?php
+		$MontoTotal = 0;
     	foreach ($registro as $orden) {
 			list($Anio, $CodOrganismo, $NroOrden) = split("[_]", $orden);
 			//	consulto datos generales
@@ -128,6 +129,7 @@
 						op.NroOrden = '".$NroOrden."'
 					ORDER BY CodBanco";
 			$field_orden = getRecord($sql);
+			$MontoTotal += $field_orden['MontoTotal'];
 			?>
 		    <tr class="trListaBody2">
 		        <td colspan="3"><?=htmlentities($field_orden['Organismo'])?></td>
@@ -139,6 +141,7 @@
 			<tr class="trListaBody">
 		        <td width="200">
 		        	<input type="hidden" name="orden[]" value="<?=$orden?>" />
+		        	<input type="hidden" name="monto[]" value="<?=$field_orden['MontoTotal']?>" />
 		        	<?=htmlentities($field_orden['TipoPago'])?>
 		        </td>
 		        <td><?=htmlentities($field_orden['NomProveedorPagar'])?></td>
@@ -161,6 +164,7 @@
     	?>
     </tbody>
 </table>
+<input type="hidden" name="MontoTotal" id="MontoTotal" value="<?=$MontoTotal?>">
 </div>
 </center>
 </div>
@@ -278,11 +282,38 @@ function preparar_prepago(form, accion) {
 		url: "lib/form_ajax.php",
 		data: "modulo=orden_pago&"+$('#'+form.id).serialize()+"&accion=preparar_prepago",
 		async: false,
-		success: function(resp){
-			if (resp.trim() != "") cajaModal(resp, "error", 400);
-			else form.submit();
+		success: function(resp) {
+			var partes = resp.split("|");
+			if (partes[0].trim() != "") cajaModal(resp, "error", 400);
+			else if (partes[1].trim() != "") {
+				$("#"+form.id).attr("action", "gehen.php?anz=ap_orden_pago_prepago_lista&lista=prepago&concepto=02-0002&_APLICACION=AP&mostrar=vouchers&accion=ap_vouchers_tab&origen=orden-adelanto-total&registro="+partes[1]);
+				form.submit();
+			} else form.submit();
 		}
 	});
+	return false;
+}
+
+//	validar orden de pago
+function validar_prepago(form, accion) {
+	var MontoTotal = Number($('#MontoTotal').val());
+	if (MontoTotal > 0) {
+		preparar_prepago(form, accion);
+	} else {
+		$("#cajaModal").dialog({
+			buttons: {
+				"Aceptar": function() {
+					$(this).dialog("close");
+					bloqueo(true);
+					preparar_prepago(form, accion);
+				},
+				"Cancelar": function() {
+					$(this).dialog("close");
+				}
+			}
+		});
+		cajaModalConfirm("No Existe Monto Pendiente de Pago para la Orden u Obligación,<br> Desea Continuar?", 425);
+	}
 	return false;
 }
 </script>

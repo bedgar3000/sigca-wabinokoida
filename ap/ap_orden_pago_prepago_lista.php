@@ -309,14 +309,14 @@ $_width = 900;
     <a id="aVoucher" href="pagina.php?iframe=true" rel="prettyPhoto[iframe2]" style="display:none;"></a>
 </div>
 
-
 <?php
 //	muestro vouchers
 if ($mostrar == "vouchers") {
+	if (!isset($origen)) $origen = 'orden-anulacion';
 	?>
     <script type="text/javascript">
 	$(document).ready(function() {
-		var url = "gehen.php?anz=<?=$accion?>&registro=<?=$registro?>&accion=ver&origen=orden-anulacion&iframe=true&width=1050&height=575";
+		var url = "gehen.php?anz=<?=$accion?>&registro=<?=$registro?>&accion=ver&origen=<?=$origen?>&iframe=true&width=100%&height=475";
 		$("#aVoucher").attr("href", url);
 		document.getElementById("aVoucher").click();
     });

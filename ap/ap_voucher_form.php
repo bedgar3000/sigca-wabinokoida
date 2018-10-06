@@ -26,7 +26,7 @@ $sql = "SELECT
 			v.CodOrganismo = '".$CodOrganismo."' AND
 			v.Periodo = '".$Periodo."' AND
 			v.Voucher = '".$Voucher."' AND
-			v.CodContabilidad = '".$CodContabilidad."'";
+            v.CodContabilidad = '".$CodContabilidad."'";
 $query = mysql_query($sql) or die ($sql.mysql_error());
 if (mysql_num_rows($query) != 0) $field = mysql_fetch_array($query);
 //

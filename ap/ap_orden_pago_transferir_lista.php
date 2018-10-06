@@ -153,10 +153,6 @@ if ($fPeriodo != "") { $cPeriodo = "checked"; $filtro.=" AND (p.Periodo = '".$fP
 
 
 <?php
-//$mostrar="vouchers";
-//$registro="002748_1";
-//$accion="ap_generar_vouchers_pago";
-//echo "registro: $registro <br> accion: $accion";
 //	muestro vouchers
 if ($mostrar == "vouchers") {
 	?>

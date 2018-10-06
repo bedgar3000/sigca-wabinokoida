@@ -67,7 +67,7 @@ while ($field = mysql_fetch_array($query)) {
     $cuenta = $field['Ncuenta'];
 
     #Monto
-    list($int, $dec) = explode('.', $field['TotalNeto']); 
+    list($int, $dec) = explode('.', number_format($field['TotalNeto'],2)); 
     $string = $int . $dec;
 	$monto = mb_str_pad($string, 10, "0", STR_PAD_LEFT);
 	
