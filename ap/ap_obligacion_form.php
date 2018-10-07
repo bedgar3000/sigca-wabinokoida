@@ -850,15 +850,15 @@ $_width = 1100;
     <tr>
         <td>
             <div class="header">
-            <ul id="tab">
-            <!-- CSS Tabs -->
-            <li id="li1" onclick="currentTab('tab', this);" class="current"><a href="#" onclick="mostrarTab('tab', 1, 6);">Informaci&oacute;n General</a></li>
-            <li id="li2" onclick="currentTab('tab', this);"><a href="#" onclick="mostrarTab('tab', 2, 6);">Informaci&oacute;n Monetaria</a></li>
-            <li id="li3" onclick="currentTab('tab', this);"><a href="#" onclick="mostrarTab('tab', 3, 6);">Dist. Contable y Presup.</a></li>
-            <li id="li4" onclick="currentTab('tab', this);"><a href="#" onclick="<?=$mostrarTabDistribucion?>">Resumen Contable y Presup.</a></li>
-            <li id="li5" onclick="currentTab('tab', this);"><a href="#" onclick="mostrarTab('tab', 5, 6);">Registro de Facturas</a></li>
-            <li id="li6" onclick="currentTab('tab', this);"><a href="#" onclick="mostrarTab('tab', 6, 6);">Adelantos y Pagos Parciales</a></li>
-            </ul>
+				<ul id="tab">
+					<!-- CSS Tabs -->
+					<li id="li1" onclick="currentTab('tab', this);" class="current"><a href="#" onclick="mostrarTab('tab', 1, 6);">Informaci&oacute;n General</a></li>
+					<li id="li2" onclick="currentTab('tab', this);"><a href="#" onclick="mostrarTab('tab', 2, 6);">Informaci&oacute;n Monetaria</a></li>
+					<li id="li3" onclick="currentTab('tab', this);"><a href="#" onclick="mostrarTab('tab', 3, 6);">Dist. Contable y Presup.</a></li>
+					<li id="li4" onclick="currentTab('tab', this);"><a href="#" onclick="<?=$mostrarTabDistribucion?>">Resumen Contable y Presup.</a></li>
+					<li id="li5" onclick="currentTab('tab', this);"><a href="#" onclick="mostrarTab('tab', 5, 6);">Registro de Facturas</a></li>
+					<li id="li6" onclick="currentTab('tab', this);"><a href="#" onclick="mostrarTab('tab', 6, 6);">Adelantos y Pagos Parciales</a></li>
+				</ul>
             </div>
         </td>
     </tr>
@@ -2505,8 +2505,46 @@ $_width = 1100;
 		$('#MontoAdelanto').val(MontoAdelanto).formatCurrency();
 		actualizarMontosObligacion();
 	}
-	//	
+
+	/**
+	 * Buscar adelantos pagados
+	 * 
+	 * @return Void
+	 */
+	function buscarAdelantosPagados() {
+		$.ajax({
+			type: "POST",
+			url: "ap_obligacion_ajax.php",
+			data: {
+				modulo : 'ajax',
+				accion : 'buscarAdelantosPagados',
+				CodProveedor : $('#CodProveedor').val()
+			},
+			async: false,
+			dataType: 'JSON',
+			success: function(resp) {
+				if (resp.status == 'success') {
+					obligacion_form.adelantos = resp.adelantos;
+				} else adelantos = [];
+			}
+		});
+	}
+	
+	//	Documento listo
+	var obligacion_form = {
+		ajaxAdelantos : true,
+		adelantos : []
+	};
+	var OBADEORDEN = "<?=$_PARAMETRO['OBADEORDEN']?>";
 	$(document).ready(function() {
+		//	evento al click de los tab
+		$('#tab li').on('click', function() {
+			if (obligacion_form.ajaxAdelantos && $('#CodProveedor').val() != '') {
+				obligacion_form.ajaxAdelantos = false;
+				buscarAdelantosPagados();
+			}
+		})
+
 		<?php
 		if ($opcion == "interfase-bono-nuevo") {
 			?>

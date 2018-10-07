@@ -433,17 +433,40 @@ elseif ($modulo == "orden_pago") {
 				execute($sql);
 				##	generar voucher
 				if ($_PARAMETRO['CONTONCO'] == 'S') {
-					##	
-					$sql = "SELECT ABS(SUM(gai.MontoImpuesto)) AS Monto
-							FROM ap_obligacionesadelantos oa
-							INNER JOIN ap_gastoadelantoimpuesto gai ON gai.CodAdelanto = oa.CodAdelanto
+					//	impuestos que provisionan en el documento
+					$sql = "SELECT ABS(SUM(oi1.MontoImpuesto)) AS Monto
+							FROM ap_obligacionesimpuesto oi1
+							INNER JOIN ap_obligaciones o1 ON (
+								oi1.CodProveedor = o1.CodProveedor
+								AND oi1.CodTipoDocumento = o1.CodTipoDocumento
+								AND oi1.NroDocumento = o1.NroDocumento
+							)
 							WHERE
-								oa.CodProveedor = '$field_op[CodProveedor]'
-								AND oa.CodTipoDocumento = '$field_op[CodTipoDocumento]'
-								AND oa.NroDocumento = '$field_op[NroDocumento]'
-							GROUP BY gai.CodAdelanto";
+								oi1.FlagProvision = 'N' AND
+								oi1.CodProveedor = '$field_op[CodProveedor]' AND
+								oi1.CodTipoDocumento = '$field_op[CodTipoDocumento]' AND
+								oi1.NroDocumento = '$field_op[NroDocumento]'
+							GROUP BY oi1.FlagProvision";
 					$MontoImpuesto = getVar3($sql);
 					$MontoImpuesto = floatval($MontoImpuesto);
+				
+					//	impuestos que provisionan en el pago
+					$sql = "SELECT ABS(SUM(oi1.MontoImpuesto)) AS Monto
+							FROM
+								ap_obligacionesimpuesto oi1
+								INNER JOIN ap_obligaciones o1 ON (
+									oi1.CodProveedor = o1.CodProveedor
+									AND oi1.CodTipoDocumento = o1.CodTipoDocumento
+									AND oi1.NroDocumento = o1.NroDocumento
+								)
+							WHERE
+								oi1.FlagProvision = 'P' AND
+								oi1.CodProveedor = '$field_op[CodProveedor]' AND
+								oi1.CodTipoDocumento = '$field_op[CodTipoDocumento]' AND
+								oi1.NroDocumento = '$field_op[NroDocumento]'
+							GROUP BY oi1.FlagProvision";
+					$MontoImpuesto3 = getVar3($sql);
+					$MontoImpuesto3 = floatval($MontoImpuesto3);
 					##	
 					$sql = "
 						(
@@ -473,26 +496,24 @@ elseif ($modulo == "orden_pago") {
 								o.ReferenciaTipoDocumento AS TipoOrden,
 								o.ReferenciaNroDocumento AS NroOrden,
 								pc.Descripcion AS NomCuenta,
-								ABS(SUM(gai.MontoImpuesto)) AS MontoVoucher,
+								ABS(SUM(oc.MontoImpuesto)) AS MontoVoucher,
 								pc.TipoSaldo,
 								pc.FlagReqCC,
 								'02' AS Orden,
 								'Haber' AS Columna
-							FROM ap_obligacionesadelantos oa
-							INNER JOIN ap_gastoadelantoimpuesto gai ON gai.CodAdelanto = oa.CodAdelanto
-							INNER JOIN ap_obligaciones o ON (
-								oa.CodProveedor = o.CodProveedor
-								AND oa.CodTipoDocumento = o.CodTipoDocumento
-								AND oa.NroDocumento = o.NroDocumento
-							)
-							INNER JOIN mastimpuestos i ON (gai.CodImpuesto = i.CodImpuesto)
-							INNER JOIN ac_mastplancuenta pc ON (i.CodCuenta = pc.CodCuenta)
+							FROM
+								ap_obligacionesimpuesto oc
+								INNER JOIN ap_obligaciones o ON (oc.CodProveedor = o.CodProveedor AND
+																oc.CodTipoDocumento = o.CodTipoDocumento AND
+																oc.NroDocumento = o.NroDocumento)
+								INNER JOIN mastimpuestos i ON (oc.CodImpuesto = i.CodImpuesto)
+								INNER JOIN ac_mastplancuenta pc ON (i.CodCuenta = pc.CodCuenta)
 							WHERE
 								i.FlagProvision = 'P' AND
-								oa.CodProveedor = '$field_op[CodProveedor]' AND
-								oa.CodTipoDocumento = '$field_op[CodTipoDocumento]' AND
-								oa.NroDocumento = '$field_op[NroDocumento]'
-							GROUP BY i.CodCuenta
+								oc.CodProveedor = '$field_op[CodProveedor]' AND
+								oc.CodTipoDocumento = '$field_op[CodTipoDocumento]' AND
+								oc.NroDocumento = '$field_op[NroDocumento]'
+							GROUP BY CodCuenta
 						)
 						UNION
 						(
@@ -501,7 +522,7 @@ elseif ($modulo == "orden_pago") {
 								o.ReferenciaTipoDocumento AS TipoOrden,
 								o.ReferenciaNroDocumento AS NroOrden,
 								pc.Descripcion AS NomCuenta,
-								(o.MontoObligacion) AS MontoVoucher,
+								(o.MontoObligacion + $MontoImpuesto3) AS MontoVoucher,
 								pc.TipoSaldo,
 								pc.FlagReqCC,
 								'03' AS Orden,
@@ -537,7 +558,180 @@ elseif ($modulo == "orden_pago") {
 						else $Debitos += $MontoVoucher;
 					}
 				}
+				//	consulto e inserto las retenciones
+				$sql = "SELECT
+							op.CodOrganismo,
+							op.Anio,
+							op.NroOrden,
+							op.CodProveedor,
+							op.CodTipoDocumento,
+							op.NroDocumento,
+							oi.NroControl,
+							oi.NroFactura,
+							o.FechaRegistro,
+							oi.FechaFactura,
+							oi.MontoRetenido,
+							oi.FactorPorcentaje AS Porcentaje,
+							oi.MontoFactura,
+							oi.MontoImpuesto,
+							oi.MontoAfecto,
+							oi.MontoNoAfecto,
+							oi.CodImpuesto,
+							i.TipoComprobante
+						FROM ap_ordenpago op
+						INNER JOIN ap_obligaciones o ON (
+							o.CodProveedor = op.CodProveedor
+							AND o.CodTipoDocumento = op.CodTipoDocumento
+							AND o.NroDocumento = op.NroDocumento
+						)
+						INNER JOIN ap_obligacionesfacturas oi ON (
+							o.CodProveedor = oi.CodProveedor
+							AND o.CodTipoDocumento = oi.CodTipoDocumento
+							AND o.NroDocumento = oi.NroDocumento
+						)
+						INNER JOIN mastimpuestos i ON oi.CodImpuesto = i.CodImpuesto
+						WHERE
+							op.Anio = '$Anio'
+							AND op.CodOrganismo = '$CodOrganismo'
+							AND op.NroOrden = '$NroOrden'
+						ORDER BY TipoComprobante, oi.Secuencia";
+				$fr = getRecords($sql);
+				if (!count($fr)) {
+					$sql = "SELECT
+								op.CodOrganismo,
+								op.Anio,
+								op.NroOrden,
+								op.CodProveedor,
+								op.CodTipoDocumento,
+								op.NroDocumento,
+								o.NroControl,
+								o.NroFactura,
+								o.FechaRegistro,
+								o.FechaFactura,
+								oi.MontoImpuesto AS MontoRetenido,
+								oi.FactorPorcentaje AS Porcentaje,
+								(o.MontoAfecto + o.MontoNoAfecto + o.MontoImpuesto) AS MontoFactura,
+								o.MontoImpuesto,
+								o.MontoAfecto,
+								o.MontoNoAfecto,
+								i.CodImpuesto,
+								i.TipoComprobante
+							FROM ap_ordenpago op
+							INNER JOIN ap_obligaciones o ON (
+								o.CodProveedor = op.CodProveedor
+								AND o.CodTipoDocumento = op.CodTipoDocumento
+								AND o.NroDocumento = op.NroDocumento
+							)
+							INNER JOIN ap_obligacionesimpuesto oi ON (
+								o.CodProveedor = oi.CodProveedor
+								AND o.CodTipoDocumento = oi.CodTipoDocumento
+								AND o.NroDocumento = oi.NroDocumento
+							)
+							INNER JOIN mastimpuestos i ON (oi.CodImpuesto = i.CodImpuesto)
+							WHERE
+								op.Anio = '$Anio' AND
+								op.CodOrganismo = '$CodOrganismo' AND
+								op.NroOrden = '$NroOrden'
+							ORDER BY TipoComprobante";
+					$fr = getRecords($sql);
+				}
+				$Grupo = '';
+				foreach ($fr as $field_retenciones) {
+					if ($FlagFacturaPendiente != 'S') {
+						$NroDocumento = $field_retenciones['NroDocumento'];
+						$NroControl = $field_retenciones['NroControl'];
+						$NroFactura = $field_retenciones['NroFactura'];
+						$FechaFactura = formatFechaDMA($field_retenciones['FechaFactura']);
+					}
+					//	consulto si existe la retencion 
+					if ($Grupo != $field_retenciones['TipoComprobante']) $SecuenciaRetencion = 0;
+					++$SecuenciaRetencion;
+					$sql = "SELECT *
+							FROM ap_retenciones
+							WHERE
+								CodOrganismo = '$field_retenciones[CodOrganismo]'
+								AND NroOrden = '$field_retenciones[NroOrden]'
+								AND AnioOrden = '$field_retenciones[Anio]'
+								AND TipoComprobante = '$field_retenciones[TipoComprobante]'
+								AND Secuencia = '$SecuenciaRetencion'
+								AND Estado <> 'AN'";
+					$field_retencion = getRecord($sql);
+					//	si no existe inserto nuevo comprobante
+					if (!count($field_retencion)) {
+						if ($Grupo != $field_retenciones['TipoComprobante']) {
+							$Grupo = $field_retenciones['TipoComprobante'];
+							$NroComprobante = getCodigo_3("ap_retenciones", "NroComprobante", "Anio", "TipoComprobante", $Anio, $field_retenciones['TipoComprobante'], 8);
+						}
+						$FechaComprobanteRetencion = formatFechaAMD($FechaPago);
+						$FechaFacturaRetencion = formatFechaAMD($FechaFactura);
+						$sql = "INSERT INTO ap_retenciones
+								SET
+									Anio = '$Anio',
+									CodOrganismo = '$field_retenciones[CodOrganismo]',
+									NroOrden = '$field_retenciones[NroOrden]',
+									AnioOrden = '$field_retenciones[Anio]',
+									NroComprobante = '$NroComprobante',
+									Secuencia = '$SecuenciaRetencion',
+									PeriodoFiscal = '$Periodo',
+									CodImpuesto = '$field_retenciones[CodImpuesto]',
+									FechaComprobante = '$FechaComprobanteRetencion',
+									CodProveedor = '$field_retenciones[CodProveedor]',
+									CodTipoDocumento = '$field_retenciones[CodTipoDocumento]',
+									NroDocumento = '$NroDocumento',
+									NroControl = '$NroControl',
+									NroFactura = '$NroFactura',
+									FechaFactura = '$FechaFacturaRetencion',
+									MontoAfecto = '$field_retenciones[MontoAfecto]',
+									MontoNoAfecto = '$field_retenciones[MontoNoAfecto]',
+									MontoImpuesto = '$field_retenciones[MontoImpuesto]',
+									MontoFactura = '$field_retenciones[MontoFactura]',
+									Porcentaje = '$field_retenciones[Porcentaje]',
+									MontoRetenido = '$field_retenciones[MontoRetenido]',
+									TipoComprobante = '$field_retenciones[TipoComprobante]',
+									PagoNroProceso = '',
+									PagoSecuencia = '',
+									UltimoUsuario = '$_SESSION[USUARIO_ACTUAL]',
+									UltimaFecha = NOW()";
+					}
+					execute($sql);
+				}
 			}
+			##	ordenes con adelantos
+			$sql = "SELECT ga.*
+					FROM ap_obligacionesadelantos oa
+					INNER JOIN ap_gastoadelanto ga ON ga.CodAdelanto = oa.codAdelanto
+					WHERE
+						oa.CodProveedor = '$field_op[CodProveedor]'
+						AND oa.CodTipoDocumento = '$field_op[CodTipoDocumento]'
+						AND oa.NroDocumento = '$field_op[NroDocumento]'
+						AND ga.TipoCompromiso <> ''
+						AND ga.NroOrden <> ''";
+			$field_adelantos = getRecords($sql);
+			foreach ($field_adelantos as $fa) {
+				if ($fa['TipoCompromiso'] == 'OC') {
+					$sql = "UPDATE lg_ordencompra
+							SET
+								MontoPagado = MontoTotal,
+								MontoPendiente = 0
+							WHERE
+								CodOrganismo = '$CodOrganismo'
+								AND Anio = '$fa[Anio]'
+								AND NroOrden = '$fa[NroOrden]'";
+					execute($sql);
+				}
+				elseif ($fa['TipoCompromiso'] == 'OS') {
+					$sql = "UPDATE lg_ordenservicio
+							SET
+								MontoGastado = TotalMontoIva,
+								MontoPendiente = 0
+							WHERE
+								CodOrganismo = '$CodOrganismo'
+								AND Anio = '$fa[Anio]'
+								AND NroOrden = '$fa[NroOrden]'";
+					execute($sql);
+				}
+			}
+			##	sumador
 			$MontoPago += $field_op['MontoTotal'];
 			$MontoRetenido += $field_op['MontoImpuestoOtros'];
 		}
@@ -577,6 +771,7 @@ elseif ($modulo == "orden_pago") {
 			execute($sql);
 			echo "|";
 		}
+		##	si tiene vouchers
 		if (count($VOUCHER) > 0) {
 			if ($_PARAMETRO['CONTONCO'] == 'S') {
 				$CodContabilidad = 'T';
@@ -649,8 +844,6 @@ elseif ($modulo == "orden_pago") {
 			}
 			echo "|$CodOrganismo"."_"."$Periodo"."_"."$Voucher"."_"."$CodContabilidad";
 		}
-		// mysql_query("ROLLBACK");
-		// die('');
 		##	--------------------
 		mysql_query("COMMIT");
 	}

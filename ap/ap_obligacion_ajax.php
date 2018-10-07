@@ -1,7 +1,7 @@
 <?php
 include("../lib/fphp.php");
 include("lib/fphp.php");
-	$__archivo = fopen("_"."$modulo-$accion.sql", "w+");
+//	$__archivo = fopen("_"."$modulo-$accion.sql", "w+");
 ///////////////////////////////////////////////////////////////////////////////
 //	OBLIGACIONES (NUEVO, MODIFICAR, REVISAR, APROBAR, ANULAR)
 ///////////////////////////////////////////////////////////////////////////////
@@ -2139,11 +2139,11 @@ elseif ($modulo == "ajax") {
 			<input type="text" name="DocumentoReferencia" value="<?=$field_documentos['DocumentoReferencia']?>" style="text-align:center;" class="cell2" readonly="readonly" />
 		</td>
 		<td>
-			<input type="text" name="Fecha" value="<?=formatFechaDMA($field_documentos['Fecha'])?>" style="text-align:center;" class="cell2" readonly="readonly" />
+			<input type="text" name="Fecha" value="<?=formatFechaDMA($field_documentos['Fecha'])?>" style="text-align:center;" class="cell2 Fecha" readonly="readonly" />
 		</td>
 		<td>
-			<input type="text" name="ReferenciaTipoDocumento" value="<?=$TipoDoc?>" style="width:15%;" class="cell2" readonly="readonly" />
-			<input type="text" name="ReferenciaNroDocumento" value="<?=$NroOrden?>" style="width:70%;" class="cell2" readonly="readonly" />
+			<input type="text" name="ReferenciaTipoDocumento" value="<?=$TipoDoc?>" style="width:15%;" class="cell2 ReferenciaTipoDocumento" readonly="readonly" />
+			<input type="text" name="ReferenciaNroDocumento" value="<?=$NroOrden?>" style="width:70%;" class="cell2 ReferenciaNroDocumento" readonly="readonly" />
 		</td>
 		<td>
 			<input type="text" name="MontoTotal" value="<?=number_format($MontoTotal, 2, ',', '.')?>" style="text-align:right;" class="cell2" readonly="readonly" />
@@ -2590,7 +2590,7 @@ elseif ($modulo == "ajax") {
 			<tr class="trListaBody" onclick="clk($(this), 'adelantos', 'adelantos_<?=$id?>');" id="adelantos_<?=$id?>">
 				<th>
 					<input type="hidden" name="adelantos_CodAdelanto[]" value="<?=$f['CodAdelanto']?>">
-					<input type="hidden" name="adelantos_MontoTotal[]" value="<?=$f['MontoTotal']?>">
+					<input type="hidden" name="adelantos_MontoTotal[]" value="<?=$f['SaldoAdelanto']?>">
 					<?=$nro_detalle?>
 				</th>
 				<td align="center"><?=formatFechaDMA($f['FechaDocumento'])?></td>
@@ -2598,12 +2598,68 @@ elseif ($modulo == "ajax") {
 				<td align="center"><?=printValores('adelanto-tipo',$f['TipoAdelanto'])?></td>
 				<td align="center"><?=$f['NroAdelanto']?></td>
 				<td align="right">
-					<strong><?=number_format($f['MontoTotal'],2,',','.')?></strong>
+					<strong><?=number_format($f['SaldoAdelanto'],2,',','.')?></strong>
 				</td>
 				<td><?=$f['Descripcion']?></td>
 			</tr>
 			<?php
 		}
+	}
+	//
+	elseif ($accion == "buscarAdelantosPagados") {
+		##	Adelantos pendientes de aplicar
+		$sql = "SELECT *
+				FROM ap_gastoadelanto
+				WHERE
+					CodProveedor = '$CodProveedor'
+					AND Estado = 'PA'";
+		$field_adelantos = getRecords($sql);
+
+		$i = 0;
+		$adelantos = [];
+		foreach ($field_adelantos as $fa) {
+			##	Impuestos del adelanto
+			$sql = "SELECT * FROM ap_gastoadelantoimpuesto WHERE CodAdelanto = '$fa[CodAdelanto]'";
+			$field_impuestos = getRecords($sql);
+
+			##	Impuestos
+			$impuestos = [];
+			foreach ($field_impuestos as $fi) {
+				$impuestos[] = [
+					'CodImpuesto' => $fi['CodImpuesto'],
+					'Factor' => $fi['Factor'],
+					'MontoAfecto' => $fi['MontoAfecto'],
+					'MontoImpuesto' => $fi['MontoImpuesto'],
+				];
+			}
+			
+			##	Adelantos
+			$adelantos[] = [
+				'CodAdelanto' => $fa['CodAdelanto'],
+				'NroAdelanto' => $fa['NroAdelanto'],
+				'FechaDocumento' => $fa['FechaDocumento'],
+				'Anio' => $fa['Anio'],
+				'Periodo' => $fa['Periodo'],
+				'TipoCompromiso' => $fa['TipoCompromiso'],
+				'NroCompromiso' => $fa['NroCompromiso'],
+				'NroOrden' => $fa['NroOrden'],
+				'MontoAfecto' => $fa['MontoAfecto'],
+				'MontoNoAfecto' => $fa['MontoNoAfecto'],
+				'MontoImpuestoVentas' => $fa['MontoImpuestoVentas'],
+				'MontoRetenciones' => $fa['MontoRetenciones'],
+				'MontoTotal' => $fa['MontoTotal'],
+				'SaldoAdelanto' => $fa['SaldoAdelanto'],
+				'Descripcion' => $fa['Descripcion'],
+				'ObligacionTipodocumento' => $fa['ObligacionTipodocumento'],
+				'ObligacionNroDocumento' => $fa['ObligacionNroDocumento'],
+				'impuestos' => $impuestos,
+			];
+		}
+		
+		die(json_encode([
+			'status' => 'success',
+			'adelantos' => $adelantos,
+		]));
 	}
 }
 ?>

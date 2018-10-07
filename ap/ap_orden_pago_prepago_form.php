@@ -302,12 +302,12 @@ function validar_prepago(form, accion) {
 	} else {
 		$("#cajaModal").dialog({
 			buttons: {
-				"Aceptar": function() {
+				"Si": function() {
 					$(this).dialog("close");
 					bloqueo(true);
 					preparar_prepago(form, accion);
 				},
-				"Cancelar": function() {
+				"No": function() {
 					$(this).dialog("close");
 				}
 			}

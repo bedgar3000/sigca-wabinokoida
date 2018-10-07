@@ -10,8 +10,20 @@ if ($opcion == "nuevo") {
 	$field['TotalDiasPago'] = $field['TotalDiasPeriodo'];
 	$DiasHabiles = getDiasHabiles(formatFechaDMA($field['FechaInicio']), formatFechaDMA($field['FechaFin']));
 	$DiasInactivos = $field['TotalDiasPeriodo'] - $DiasHabiles;
-	$UT = getVar3("SELECT Valor FROM mastunidadtributaria WHERE Anio = '$_PARAMETRO[UTANIO]'");
-	$field['ValorDia'] = $UT * $_PARAMETRO['UTPORC'] / 100;
+	##$UT = getVar3("SELECT Valor FROM mastunidadtributaria WHERE Anio = '$_PARAMETRO[UTANIO]'");
+	
+	## 26-09-2018 Nuevo Calculo de Valor Diario
+	if ($_PARAMETRO['BACBA']=="SBM") { 
+		# code...
+		$field['ValorDia']= (getUTN($_PARAMETRO['UTANIO'],'mastsueldosmin','SBM','Monto') * $_PARAMETRO['UTPORC'])/30;		
+	}elseif ($_PARAMETRO['BACBA']=="UT") {
+		# code...
+		$field['ValorDia']= getUTN($_PARAMETRO['UTANIO'],'mastunidadtributaria', 'UT', 'Valor') * $_PARAMETRO['UTPORC'];		
+	}elseif ($_PARAMETRO['BACBA']=="UCAU") {
+		# code...
+		$field['ValorDia']= getUTN($_PARAMETRO['UTANIO'],'mastunidadaritmetica', 'UCAU', 'Valor') * $_PARAMETRO['UTPORC'];		
+	}
+	##$field['ValorDia'] = $UT * $_PARAMETRO['UTPORC'] / 100;
 	$field['CodTipoNom'] = $_SESSION["NOMINA_ACTUAL"];
 	$field['HorasDiaria'] = $_PARAMETRO['HORADIR'];
 	$field['HorasSemanal'] = $_PARAMETRO['HORADIR'] * $_PARAMETRO['HORDIAS'];
@@ -69,7 +81,8 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "cerrar") {
 		$clkCancelar = "document.getElementById('frmentrada').submit();";
 	}
 }
-$UT = getVar3("SELECT Valor FROM mastunidadtributaria WHERE Anio = '$_PARAMETRO[UTANIO]'");
+## 26-09-2018
+/*$UT = getVar3("SELECT Valor FROM mastunidadtributaria WHERE Anio = '$_PARAMETRO[UTANIO]'");
 $ValorDia = $UT * $_PARAMETRO['UTPORC'] / 100;
 $ValorSemanal = $ValorDia * 7;
 $ValorMes = $ValorDia * $field['TotalDiasPago'];
@@ -80,7 +93,7 @@ if ($ValorDia != $field['ValorDia'])
 	$field['ValorSemanal'] = $ValorSemanal;
 	$field['ValorMes'] = $ValorMes;
 }
-else $FlagModificar = 'none';
+else $FlagModificar = 'none';*/
 //	------------------------------------
 $_width = 800;
 ?>
@@ -122,7 +135,7 @@ $_width = 800;
 	    <div class="ui-state-highlight ui-corner-all" style="width:<?=$_width?>px; text-align:left;">
 	        <p>
 	        <span class="ui-icon ui-icon-alert" style="float: left;"></span>
-	        <strong>Los Valores de la Unidad Tributaria han cambiado debe Hacer Click en Modificar para actualizar los Montos</strong>
+	        <strong>Los Valores de la Unidad Base para el Calculo han cambiado debe Hacer Click en Modificar para actualizar los Montos</strong>
 	        </p>
 	    </div>
 	</div>

@@ -371,7 +371,7 @@ $pdf->SetFillColor(255, 255, 255);
 $pdf->SetFont('Arial', 'B', 12);
 $pdf->Cell(195, 20, 'LISTA DE CUENTAS CONTABLES', 0, 1, 'C');
 $pdf->SetFont('Arial', '', 8);
-$pdf->SetWidths(array(20, 150, 25));
+$pdf->SetWidths(array(25, 145, 25));
 $pdf->SetAligns(array('C', 'L', 'R'));
 $pdf->Row(array('Cuenta', 
 				utf8_decode('Descripción'), 

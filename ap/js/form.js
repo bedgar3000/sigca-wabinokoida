@@ -2,7 +2,7 @@
 
 //	obligacion
 function obligacion(form, accion) {
-	$(".div-progressbar").css("display", "block");
+	bloqueo(true);
 	//	formulario
 	if (document.getElementById("FlagCompromiso").checked) var FlagCompromiso = "S"; else var FlagCompromiso = "N";
 	var MontoAfecto = new Number(setNumero($("#MontoAfecto").val()));
@@ -209,8 +209,14 @@ function obligacion(form, accion) {
 		//error = "El total de la distribución marcada como No Afecta ("+_MontoNoAfecto+") es distinta del <strong>Monto No Afecto ("+MontoNoAfecto+")</strong>";
 	}
 	//	errores de las retenciones
-	if ((impuesto_total - MontoImpuestoOtros) != 0) {
+	else if ((impuesto_total - MontoImpuestoOtros) != 0) {
 		//error = "El total de las retenciones debe ser igual al <strong>Monto Retención de la Obligación</strong>";
+	}
+	else if (MontoPagar < 0) {
+		error = "Total a Pagar incorrecto";
+	}
+	else if (MontoPendiente < 0) {
+		error = "Saldo Pendiente incorrecto";
 	}
 	//	valido errores
 	if (error != "") {
@@ -260,7 +266,43 @@ function obligacion(form, accion) {
 			} else obligacion_ajax(form, accion, url);
 		} 
 		else {
-			obligacion_ajax(form, accion, url);
+			//	si la persona tiene ordenes con adelanto sin aplicar
+			if (obligacion_form.adelantos.length > 0 && $('input[name="adelantos_CodAdelanto[]"]').length == 0 && $('#frm_documento input[name="DocumentoClasificacion"]').length > 0 && OBADEORDEN == 'N') {
+				var error_orden_adelanto = "";
+				$('#frm_documento input[name="DocumentoClasificacion"]').each(function(idx) {
+					var ReferenciaTipoDocumento = $('.ReferenciaTipoDocumento:eq('+idx+')').val();
+					var ReferenciaNroDocumento = $('.ReferenciaNroDocumento:eq('+idx+')').val();
+					var Fecha = $('.Fecha:eq('+idx+')').val();
+					var Anio = Fecha.substr(6, 4);
+					
+					obligacion_form.adelantos.forEach(function(adelanto) {
+						if (adelanto.Anio == Anio && adelanto.TipoCompromiso == ReferenciaTipoDocumento && adelanto.NroOrden == ReferenciaNroDocumento) {
+							error_orden_adelanto += `Se encontr&oacute; el documento <strong>${adelanto.TipoCompromiso}-${adelanto.NroOrden}</strong> con adelantos sin aplicar.<br>`;
+						}
+					});
+				});
+
+				if (error_orden_adelanto != '') {
+					cajaModal(error_orden_adelanto, 'error', 425);
+				}
+			}
+			//	si la persona tiene adelantos sin aplicar
+			else if (obligacion_form.adelantos.length > 0 && $('input[name="adelantos_CodAdelanto[]"]').length == 0) {
+				$("#cajaModal").dialog({
+					buttons: {
+						"Si": function() {
+							$(this).dialog("close");
+							obligacion_ajax(form, accion, url);
+						},
+						"No": function() {
+							$(this).dialog("close");
+							bloqueo(false);
+						}
+					}
+				});
+				cajaModalConfirm("Se han encontrado "+obligacion_form.adelantos.length+" Adelantos Pendientes para esta Persona,<br> Est&aacute; seguro que desea continuar?", 425);
+			}
+			else obligacion_ajax(form, accion, url);
 		}
 	}
 	return false;

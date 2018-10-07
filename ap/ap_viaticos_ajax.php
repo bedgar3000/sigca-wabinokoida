@@ -376,8 +376,18 @@ elseif ($modulo == "ajax") {
 	elseif ($accion == "viaticos_conceptos_insertar") {
 		$nro_conceptos = $nro_detalles;
 		##	
-		$UnidadTributaria = getVar3("SELECT Valor FROM mastunidadtributaria WHERE Anio = '$_PARAMETRO[UTANIOVIAT]'");
-		##	
+		/*if ($_PARAMETRO['UBACVIAT'] == 'UCAU')
+			$UnidadTributaria = getVar3("SELECT Valor FROM mastunidadaritmetica WHERE Anio = '$_PARAMETRO[ANIOUBCVIAT]'");
+		else
+			$UnidadTributaria = getVar3("SELECT Valor FROM mastunidadtributaria WHERE Anio = '$_PARAMETRO[UTANIOVIAT]'");*/
+		##
+		#actualizaciones 14-09-2018
+		if($_PARAMETRO['UBACVIAT']=='UT') {
+			$UnidadTributaria = getUTN($_PARAMETRO['ANIOUBCVIAT'],'mastunidadtributaria', 'UT', 'Valor');
+		}elseif($_PARAMETRO['UBACVIAT']=='UCAU'){
+			$UnidadTributaria = getUTN($_PARAMETRO['ANIOUBCVIAT'],'mastunidadaritmetica', 'UCAU', 'Valor');
+		}
+		
 		$field = getRecords("SELECT * FROM ap_conceptogastoviatico WHERE CodConcepto = '".$CodConcepto."'");
 		foreach($field as $f) {
 			$id = $nro_conceptos;
