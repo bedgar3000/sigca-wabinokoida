@@ -353,6 +353,8 @@ else $action = "gehen.php?anz=co_pedidos_lista";
 	<input type="hidden" name="CodRutaDespacho" id="CodRutaDespacho" value="<?=$field['CodRutaDespacho']?>" />
 	<input type="hidden" name="CodPersonaCobrar" id="CodPersonaCobrar" value="<?=$field['CodPersonaCobrar']?>" />
 	<input type="hidden" name="igv" id="igv" value="<?=$igv?>" />
+	<input type="hidden" name="LISTPRECIVA" id="LISTPRECIVA" value="<?=$_PARAMETRO['LISTPRECIVA']?>">
+	<input type="hidden" name="CodCotizacion" id="CodCotizacion" value="<?=$CodCotizacion?>" />
 
 	<table style="width:100%; min-width:<?=$_width?>px;" align="center" cellpadding="0" cellspacing="0">
 	    <tr>
@@ -594,12 +596,13 @@ else $action = "gehen.php?anz=co_pedidos_lista";
 						<th width="125">Monto Total</th>
 						<th width="45">Exon. Imp.</th>
 						<th width="125">Precio Unit. s/Dcto.</th>
-						<th width="125">Precio Unit.</th>
-						<th width="125">Monto</th>
+						<th width="125">Precio Unit. s/Imp.</th>
+						<th width="125">Monto Total s/Imp.</th>
 						<th width="40">Dcto. %</th>
 						<th width="100">Estado</th>
 					</tr>
 				</thead>
+
 				<tbody id="lista_detalle">
 					<?php
 					$nro_detalle = 0;
@@ -659,16 +662,17 @@ else $action = "gehen.php?anz=co_pedidos_lista";
 								<?php } ?>
 							</td>
 							<td>
-								<input type="text" name="detalle_CantidadPedida[]" value="<?=number_format($f['CantidadPedida'],5,',','.')?>" class="cell2 currency5" style="text-align:right;" onchange="setMontosVentas();" <?=$disabled_ver?> <?=$read_generar?>>
+								<input type="text" name="detalle_CantidadPedida[]" value="<?=number_format($f['CantidadPedida'],5,',','.')?>" class="cell currency5" style="text-align:right;" onchange="setMontosVentas();" <?=$disabled_ver?>>
 							</td>
 							<td>
-								<input type="text" name="detalle_PrecioUnit[]" id="detalle_PrecioUnit<?=$id?>" value="<?=number_format($f['PrecioUnit'],2,',','.')?>" class="cell currency" style="text-align:right;" onchange="setMontosVentas(true, '<?=$id?>');" <?=$disabled_ver?> <?=$read_generar?>>
+								<input type="text" name="detalle_PrecioUnit[]" id="detalle_PrecioUnit<?=$id?>" value="<?=number_format($f['PrecioUnit'],2,',','.')?>" class="cell currency" style="text-align:right;" onchange="setMontosVentas(true, '<?=$id?>');" <?=$disabled_ver?> <?=($_PARAMETRO['EDITPRECIO'] == 'N')?'disabled':$disabled_ver?>>
 							</td>
 							<td>
 								<input type="text" name="detalle_MontoTotal[]" value="<?=number_format($f['MontoTotal'],2,',','.')?>" class="cell2" style="text-align:right;" readonly>
 							</td>
 							<td align="center">
-								<input type="checkbox" name="detalle_FlagExonIva[]" value="S" onchange="<?=$change_generar?>" onclick="<?=$check_generar?>" <?=chkFlag($f['FlagExonIva'])?> <?=$disabled_ver?> />
+								<input type="hidden" name="detalle_FlagExonIva[]" value="<?=$f['FlagExonIva']?>">
+								<input type="checkbox" name="detalle_chkExonIva[]" <?=chkFlag($f['FlagExonIva'])?> <?=$disabled_ver?> onclick="this.checked=!this.checked" />
 							</td>
 							<td>
 								<input type="text" name="detalle_PrecioUnitOriginal[]" id="detalle_PrecioUnitOriginal<?=$id?>" value="<?=number_format($f['PrecioUnitOriginal'],2,',','.')?>" class="cell2" style="text-align:right;" readonly>

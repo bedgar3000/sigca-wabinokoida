@@ -62,7 +62,7 @@ if ($modulo == "formulario") {
 			$detalle_MontoDcto[$i] = setNumero($detalle_MontoDcto[$i]);
 			$detalle_PrecioUnitFinal[$i] = setNumero($detalle_PrecioUnitFinal[$i]);
 			$detalle_MontoTotalFinal[$i] = setNumero($detalle_MontoTotalFinal[$i]);
-			$detalle_FlagExonIva[$i] = (!empty($detalle_FlagExonIva[$i])?'S':'N');
+			// $detalle_FlagExonIva[$i] = (!empty($detalle_FlagExonIva[$i])?'S':'N');
 			##	valido
 			if (!trim($detalle_CantidadPedida[$i])) die("La Cantidad Pedida no puede ser cero.");
 			elseif (!trim($detalle_PrecioUnit[$i])) die("El Precio Unitario no puede ser cero.");
@@ -159,7 +159,7 @@ if ($modulo == "formulario") {
 			$detalle_MontoDcto[$i] = setNumero($detalle_MontoDcto[$i]);
 			$detalle_PrecioUnitFinal[$i] = setNumero($detalle_PrecioUnitFinal[$i]);
 			$detalle_MontoTotalFinal[$i] = setNumero($detalle_MontoTotalFinal[$i]);
-			$detalle_FlagExonIva[$i] = (!empty($detalle_FlagExonIva[$i])?'S':'N');
+			// $detalle_FlagExonIva[$i] = (!empty($detalle_FlagExonIva[$i])?'S':'N');
 			##	valido
 			if (!trim($detalle_CantidadPedida[$i])) die("La Cantidad Pedida no puede ser cero.");
 			elseif (!trim($detalle_PrecioUnit[$i])) die("El Precio Unitario no puede ser cero.");
@@ -375,7 +375,8 @@ elseif ($modulo == "ajax") {
 		foreach ($field as $f)
 		{
 			$MontoTotal = $f['MontoVenta'] * $Cantidad;
-			$PrecioUnitFinal = $f['MontoVenta'] / $igvp;
+			if ($_PARAMETRO['LISTPRECIVA'] == 'N') $PrecioUnitFinal = $f['MontoVenta'];
+			else $PrecioUnitFinal = $f['MontoVenta'] / $igvp;
 			$MontoTotalFinal = $PrecioUnitFinal * $Cantidad;
 			?>
 			<tr class="trListaBody" onclick="clk($(this), 'detalle', 'detalle_<?=$id?>');" id="detalle_<?=$id?>">
@@ -430,13 +431,14 @@ elseif ($modulo == "ajax") {
 					<input type="text" name="detalle_CantidadPedida[]" value="<?=number_format($Cantidad,5,',','.')?>" class="cell currency5" style="text-align:right;" onchange="setMontosVentas();">
 				</td>
 				<td>
-					<input type="text" name="detalle_PrecioUnit[]" id="detalle_PrecioUnit<?=$id?>" value="<?=number_format($f['MontoVenta'],2,',','.')?>" class="cell currency" style="text-align:right;" onchange="setMontosVentas(true, '<?=$id?>');">
+					<input type="text" name="detalle_PrecioUnit[]" id="detalle_PrecioUnit<?=$id?>" value="<?=number_format($f['MontoVenta'],2,',','.')?>" class="cell currency" style="text-align:right;" onchange="setMontosVentas(true, '<?=$id?>');" <?=($_PARAMETRO['EDITPRECIO'] == 'N')?'disabled':''?>>
 				</td>
 				<td>
 					<input type="text" name="detalle_MontoTotal[]" value="<?=number_format($MontoTotal,2,',','.')?>" class="cell2 " style="text-align:right;" readonly>
 				</td>
 				<td align="center">
-					<input type="checkbox" name="detalle_FlagExonIva[]" value="S" <?=chkFlag($f['FlagExonIva'])?> onchange="setMontosVentas();" onclick="this.checked=!this.checked">
+					<input type="hidden" name="detalle_FlagExonIva[]" value="<?=$f['FlagExonIva']?>">
+					<input type="checkbox" name="detalle_chkExonIva[]" <?=chkFlag($f['FlagExonIva'])?> onclick="this.checked=!this.checked">
 				</td>
 				<td>
 					<input type="text" name="detalle_PrecioUnitOriginal[]" id="detalle_PrecioUnitOriginal<?=$id?>" value="<?=number_format($f['MontoVenta'],2,',','.')?>" class="cell2 " style="text-align:right;" readonly>

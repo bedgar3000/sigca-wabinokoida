@@ -177,6 +177,7 @@ else $action = "gehen.php?anz=co_cotizacion_lista";
 	<input type="hidden" name="fDocFiscalCliente" id="fDocFiscalCliente" value="<?=$fDocFiscalCliente?>" />
 	<input type="hidden" name="CodCotizacion" id="CodCotizacion" value="<?=$field['CodCotizacion']?>" />
 	<input type="hidden" name="igv" id="igv" value="<?=$igv?>" />
+	<input type="hidden" name="LISTPRECIVA" id="LISTPRECIVA" value="<?=$_PARAMETRO['LISTPRECIVA']?>">
 
 	<table style="width:100%; min-width:<?=$_width?>px;" class="tblForm">
 		<tr>
@@ -373,8 +374,8 @@ else $action = "gehen.php?anz=co_cotizacion_lista";
 					<th width="125">Monto Total</th>
 					<th width="45">Exon. Imp.</th>
 					<th width="125">Precio Unit. s/Dcto.</th>
-					<th width="125">Precio Unit.</th>
-					<th width="125">Monto</th>
+					<th width="125">Precio Unit. s/Imp.</th>
+					<th width="125">Monto Total s/Imp.</th>
 					<th width="40">Dcto. %</th>
 					<th width="150">Pedido Relacionado</th>
 					<th width="20">#</th>
@@ -446,13 +447,14 @@ else $action = "gehen.php?anz=co_cotizacion_lista";
 							<input type="text" name="detalle_CantidadPedida[]" value="<?=number_format($f['CantidadPedida'],5,',','.')?>" class="cell2 currency5" style="text-align:right;" onchange="setMontosVentas();" <?=$disabled_ver?>>
 						</td>
 						<td>
-							<input type="text" name="detalle_PrecioUnit[]" id="detalle_PrecioUnit<?=$id?>" value="<?=number_format($f['PrecioUnit'],2,',','.')?>" class="cell currency" style="text-align:right;" onchange="setMontosVentas(true, '<?=$id?>');" <?=$disabled_ver?>>
+							<input type="text" name="detalle_PrecioUnit[]" id="detalle_PrecioUnit<?=$id?>" value="<?=number_format($f['PrecioUnit'],2,',','.')?>" class="cell currency" style="text-align:right;" onchange="setMontosVentas(true, '<?=$id?>');" <?=($_PARAMETRO['EDITPRECIO'] == 'N')?'disabled':$disabled_ver?>>
 						</td>
 						<td>
 							<input type="text" name="detalle_MontoTotal[]" value="<?=number_format($f['MontoTotal'],2,',','.')?>" class="cell2" style="text-align:right;" readonly>
 						</td>
 						<td align="center">
-							<input type="checkbox" name="detalle_FlagExonIva[]" value="S" onchange="setMontosVentas();" <?=chkFlag($f['FlagExonIva'])?> <?=$disabled_ver?>  onclick="this.checked=!this.checked" />
+							<input type="hidden" name="detalle_FlagExonIva[]" value="<?=$f['FlagExonIva']?>">
+							<input type="checkbox" name="detalle_chkExonIva[]" <?=chkFlag($f['FlagExonIva'])?> <?=$disabled_ver?> onclick="this.checked=!this.checked" />
 						</td>
 						<td>
 							<input type="text" name="detalle_PrecioUnitOriginal[]" id="detalle_PrecioUnitOriginal<?=$id?>" value="<?=number_format($f['PrecioUnitOriginal'],2,',','.')?>" class="cell2" style="text-align:right;" readonly>
@@ -490,12 +492,12 @@ else $action = "gehen.php?anz=co_cotizacion_lista";
 
 			<tfoot>
 				<tr>
-					<th colspan="9"></th>
+					<th colspan="10"></th>
 					<th align="right" id="thPrecioUnit"><?=number_format($PrecioUnit,2,',','.')?></th>
 					<th align="right" id="thMontoTotal"><?=number_format($MontoTotal,2,',','.')?></th>
 					<th></th>
 					<th align="right" id="thPrecioUnitOriginal"><?=number_format($PrecioUnitOriginal,2,',','.')?></th>
-					<th align="right" id="thPrecioUnitFinal"><?=number_format($PrecioUnitFinal,2,',','.')?></th>
+					<th align="right" id="thPrecioUnitFinal"><?=number_format($PrecioUnitFinal,5,',','.')?></th>
 					<th align="right" id="thMontoTotalFinal"><?=number_format($MontoTotalFinal,2,',','.')?></th>
 					<th colspan="4"></th>
 				</tr>
@@ -514,6 +516,8 @@ else $action = "gehen.php?anz=co_cotizacion_lista";
 		var PrecioEspecial = $('#detalle_PrecioEspecial'+id).val();
 		var PrecioEspecialVta = $('#detalle_PrecioEspecialVta'+id).val();
 		var PrecioUnit = setNumero($('#detalle_PrecioUnit'+id).val());
+		var MontoVenta = new Number($('#detalle_MontoVenta'+id).val());
+		var MontoVentaUnitario = new Number($('#detalle_MontoVentaUnitario'+id).val());
 
 		if (checked) {
 			$('#detalle_FlagPrecioEspecial'+id).val('S');
@@ -523,6 +527,13 @@ else $action = "gehen.php?anz=co_cotizacion_lista";
 				$('#detalle_PrecioUnit'+id).val(PrecioEspecialVta).formatCurrency();
 		} else {
 			$('#detalle_FlagPrecioEspecial'+id).val('N');
+			if (CodUnidad == CodUnidadVenta) {
+				$('#detalle_PrecioUnit'+id).val(MontoVentaUnitario).formatCurrency();
+				$('#detalle_PrecioUnitOriginal'+id).val(MontoVentaUnitario).formatCurrency();
+			} else {
+				$('#detalle_PrecioUnit'+id).val(MontoVenta).formatCurrency();
+				$('#detalle_PrecioUnitOriginal'+id).val(MontoVenta).formatCurrency();
+			}
 		}
 		setMontosVentas();
 	}

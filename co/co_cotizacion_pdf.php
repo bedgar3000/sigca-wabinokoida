@@ -192,10 +192,10 @@ foreach ($field_detalle as $f)
 	$pdf->SetAligns(['R','L','C','R','R']);
 	$pdf->SetHeights([6,6,6]);
 	$pdf->Row([number_format($f['CantidadPedida'],2,',','.'),
-				utf8_decode($f['Descripcion']),
+				utf8_decode($f['Descripcion']) . ($f['FlagExonIva'] == 'S' ? ' (E)' : ''),
 				utf8_decode($f['CodUnidadVenta']),
-				number_format($f['PrecioUnit'],2,',','.'),
-				number_format($f['MontoTotal'],2,',','.')
+				number_format($f['PrecioUnitFinal'],2,',','.'),
+				number_format($f['MontoTotalFinal'],2,',','.')
 				]);
 }
 

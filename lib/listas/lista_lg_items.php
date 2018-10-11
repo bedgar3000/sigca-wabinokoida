@@ -23,6 +23,10 @@ if ($filtrar == "default") {
 	$maxlimit = $_SESSION["MAXLIMIT"];
 	$fEstado = "A";
 	$fOrderBy = "CodItem";
+	$fStockActualD = getVar3("SELECT MIN(StockActual) FROM vw_lg_inventarioactual_item WHERE StockActual > 0");
+	$fStockActualH = getVar3("SELECT MAX(StockActual) FROM vw_lg_inventarioactual_item WHERE StockActual > 0");
+	$fStockActualD = number_format($fStockActualD,2,',','.');
+	$fStockActualH = number_format($fStockActualH,2,',','.');
 }
 if ($fFlagDisponible != '') $filtro .= " AND i.FlagDisponible = '$fFlagDisponible'";
 if ($fBuscar != "") { 
@@ -135,7 +139,7 @@ $_width = 900;
 		                <?=loadSelect2('lg_marcas','CodMarca','Descripcion',$fCodMarca)?>
 		            </select>
 				</td>
-		        <td align="right">&nbsp;</td>
+		        <td align="right"><input type="button" value="Ver Precios"></td>
 			</tr>
 			<tr>
 				<td align="right">Sub-Familia:</td>
@@ -205,98 +209,127 @@ $_width = 900;
 		    </thead>
 		    
 		    <tbody>
-			<?php
-			//	consulto todos
-			$sql = "SELECT i.*
-					FROM vw_lg_inventarioactual_item i
-					WHERE 1 $filtro";
-			$rows_total = getNumRows3($sql);
-			//	consulto lista
-			$sql = "SELECT
-						i.*,
-						(i.Ingresos - i.Egresos) StockActual,
-						((i.Ingresos - i.Egresos) / i.CantidadEqui) AS StockActualEqui,
-						(SELECT MAX(k.PrecioUnitario)
-						 FROM lg_kardex k
-						 INNER JOIN lg_tipotransaccion tt ON (
-							tt.CodTransaccion = k.CodTransaccion
-							AND tt.TipoMovimiento = 'I'
-						 )
-						 INNER JOIN lg_transaccion t ON (
-							t.CodDocumento = k.CodDocumento
-							AND t.NroDocumento = k.NroDocumento
-							AND t.ReferenciaAnio = '$AnioActual'
-						 )
-						 WHERE k.CodItem = i.CodItem) AS PrecioCostoUnitario,
-						(SELECT u.Valor FROM lg_itemunidades u WHERE u.CodItem = i.CodItem LIMIT 1) AS CantidadEquivalente
-					FROM vw_lg_inventarioactual_item i
-					WHERE 1 $filtro
-					ORDER BY $fOrderBy
-					LIMIT ".intval($limit).", ".intval($maxlimit);
-			$field = getRecords($sql);
-			$rows_lista = count($field);
-			foreach($field as $f) {
-				$id = $f['CodItem'];
-				if ($ventana == 'listado_insertar_linea') {
-					?>
-		            <tr class="trListaBody" onClick="listado_insertar_linea('<?=$detalle?>','modulo=<?=$modulo?>&accion=<?=$accion?>&CodItem=<?=$f['CodItem']?>','<?=$f['CodItem']?>','<?=$url?>');">
-		            <?php
-				}
-				elseif ($ventana == 'listado_insertar_linea_cotizacion') {
-					?>
-		            <tr class="trListaBody" onClick="<?=$ventana?>('<?=$detalle?>','modulo=<?=$modulo?>&accion=<?=$accion?>&CodItem=<?=$f['CodItem']?>','<?=$f['CodItem']?>','<?=$url?>');">
-		            <?php
-				}
-				elseif ($ventana == 'listado_insertar_linea_precios') {
-					?>
-		            <tr class="trListaBody" onClick="<?=$ventana?>('<?=$detalle?>','modulo=<?=$modulo?>&accion=<?=$accion?>&CodItem=<?=$f['CodItem']?>','<?=$f['CodItem']?>','<?=$url?>');">
-		            <?php
-				}
-				elseif ($ventana == 'CodInterno') {
-					?>
-		            <tr class="trListaBody" onClick="selLista(['<?=$f['CodItem']?>','<?=$f['Descripcion']?>','<?=$f['CodInterno']?>','<?=$f['CodUnidad']?>','<?=$f['CodUnidadComp']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>']);">
-		            <?php
+				<?php
+				//	consulto todos
+				$sql = "SELECT i.*
+						FROM vw_lg_inventarioactual_item i
+						WHERE 1 $filtro";
+				$rows_total = getNumRows3($sql);
+				//	consulto lista
+				$sql = "SELECT
+							i.*,
+							(i.Ingresos - i.Egresos) StockActual,
+							((i.Ingresos - i.Egresos) / i.CantidadEqui) AS StockActualEqui,
+							(
+								SELECT MAX(k.PrecioUnitario)
+								FROM lg_kardex k
+								INNER JOIN lg_tipotransaccion tt ON (
+									tt.CodTransaccion = k.CodTransaccion
+									AND tt.TipoMovimiento = 'I'
+								)
+								INNER JOIN lg_transaccion t ON (
+									t.CodDocumento = k.CodDocumento
+									AND t.NroDocumento = k.NroDocumento
+									AND t.ReferenciaAnio = '$AnioActual'
+								)
+								WHERE k.CodItem = i.CodItem
+							) AS PrecioCostoUnitario,
+							(SELECT u.Valor FROM lg_itemunidades u WHERE u.CodItem = i.CodItem LIMIT 1) AS CantidadEquivalente
+						FROM vw_lg_inventarioactual_item i
+						WHERE 1 $filtro
+						ORDER BY $fOrderBy
+						LIMIT ".intval($limit).", ".intval($maxlimit);
+				$field = getRecords($sql);
+				$rows_lista = count($field);
+				foreach($field as $f) {
+					$id = $f['CodItem'];
+					if ($ventana == 'listado_insertar_linea') {
+						?>
+						<tr class="trListaBody" onClick="listado_insertar_linea('<?=$detalle?>','modulo=<?=$modulo?>&accion=<?=$accion?>&CodItem=<?=$f['CodItem']?>','<?=$f['CodItem']?>','<?=$url?>');">
+						<?php
+					}
+					elseif ($ventana == 'listado_insertar_linea_cotizacion') {
+						?>
+						<tr class="trListaBody" onClick="<?=$ventana?>('<?=$detalle?>','modulo=<?=$modulo?>&accion=<?=$accion?>&CodItem=<?=$f['CodItem']?>','<?=$f['CodItem']?>','<?=$url?>');">
+						<?php
+					}
+					elseif ($ventana == 'listado_insertar_linea_precios') {
+						?>
+						<tr class="trListaBody" onClick="<?=$ventana?>('<?=$detalle?>','modulo=<?=$modulo?>&accion=<?=$accion?>&CodItem=<?=$f['CodItem']?>','<?=$f['CodItem']?>','<?=$url?>');">
+						<?php
+					}
+					elseif ($ventana == 'CodInterno') {
+						?>
+						<tr class="trListaBody" onClick="selLista(['<?=$f['CodItem']?>','<?=$f['Descripcion']?>','<?=$f['CodInterno']?>','<?=$f['CodUnidad']?>','<?=$f['CodUnidadComp']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>']);">
+						<?php
 
-				}
-				elseif ($ventana == 'co_precios') {
-					$PrecioCostoUnitario = floatval($f['PrecioCostoUnitario']);
-					$CantidadEquivalente = floatval($f['CantidadEqui']);
-					$PrecioCostoVenta = $PrecioCostoUnitario * $CantidadEquivalente;
+					}
+					elseif ($ventana == 'co_precios') {
+						$PrecioCostoUnitario = floatval($f['PrecioCostoUnitario']);
+						$CantidadEquivalente = floatval($f['CantidadEqui']);
+						$PrecioCostoVenta = $PrecioCostoUnitario * $CantidadEquivalente;
+						?>
+						<tr class="trListaBody" onClick="selListaPrecios(
+							[
+								'<?=$f['CodItem']?>',
+								'<?=$f['Descripcion']?>',
+								'<?=$f['CodInterno']?>',
+								'<?=$f['CodUnidad']?>',
+								'<?=$f['CodUnidadComp']?>',
+								'<?=number_format($PrecioCostoUnitario,2,',','.')?>',
+								'<?=number_format($PrecioCostoVenta,2,',','.')?>',
+								'<?=$f['FlagImpuestoVentas']?>',
+								'<?=$f['CodImpuesto']?>',
+								'<?=$f['FactorImpuesto']?>',
+								'<?=$f['CantidadEqui']?>'
+							],
+							[
+								'<?=$campo1?>',
+								'<?=$campo2?>',
+								'<?=$campo3?>',
+								'<?=$campo4?>',
+								'<?=$campo5?>',
+								'<?=$campo6?>',
+								'<?=$campo7?>',
+								'<?=$campo8?>',
+								'<?=$campo9?>',
+								'<?=$campo10?>',
+								'<?=$campo11?>'
+							]
+						);">
+						<?php
+					}
+					elseif ($ventana == 'orden_compra_detalles_insertar') {
+						?>
+						<tr class="trListaBody" onClick="orden_compra_detalles_insertar('<?=$f["CodItem"]?>', 'item');" id="<?=$f['CodItem']?>">
+						<?php
+					}
+					else {
+						?>
+						<tr class="trListaBody" onClick="<?=$ventana?>(['<?=$f['CodItem']?>','<?=$f['Descripcion']?>','<?=$f['CodUnidad']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>']);">
+						<?php
+					}
 					?>
-		            <tr class="trListaBody" onClick="selListaPrecios(['<?=$f['CodItem']?>','<?=$f['Descripcion']?>','<?=$f['CodInterno']?>','<?=$f['CodUnidad']?>','<?=$f['CodUnidadComp']?>','<?=number_format($PrecioCostoUnitario,2,',','.')?>','<?=number_format($PrecioCostoVenta,2,',','.')?>','<?=$f['FlagImpuestoVentas']?>','<?=$f['CodImpuesto']?>','<?=$f['FactorImpuesto']?>','<?=$f['CantidadEqui']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>','<?=$campo4?>','<?=$campo5?>','<?=$campo6?>','<?=$campo7?>','<?=$campo8?>','<?=$campo9?>','<?=$campo10?>','<?=$campo11?>']);">
-		            <?php
-				}
-				elseif ($ventana == 'orden_compra_detalles_insertar') {
-					?>
-					<tr class="trListaBody" onClick="orden_compra_detalles_insertar('<?=$f["CodItem"]?>', 'item');" id="<?=$f['CodItem']?>">
+						<td align="center"><?=$f['CodItem']?></td>
+						<td align="center"><?=$f['CodInterno']?></td>
+						<td><?=htmlentities($f['Descripcion'])?></td>
+						<td align="center"><?=$f['CodUnidad']?></td>
+						<td align="center"><?=$f['CodUnidadComp']?></td>
+						<td align="right"><?=number_format($f['StockActual'],2,',','.')?></td>
+						<td align="right"><?=number_format($f['StockActualEqui'],2,',','.')?></td>
+						<td align="right"><?=number_format($f['MontoVentaUnitario'],2,',','.')?></td>
+						<td align="right"><?=number_format($f['MontoVenta'],2,',','.')?></td>
+						<td align="center"><?=$f['CodLinea']?></td>
+						<td align="center"><?=$f['CodFamilia']?></td>
+						<td align="center"><?=$f['CodSubFamilia']?></td>
+						<td><?=htmlentities($f['NomTipoItem'])?></td>
+						<td><?=htmlentities($f['NomMarca'])?></td>
+						<td align="right"><?=number_format($f['FactorImpuesto'],2,',','.')?></td>
+						<td align="center"><?=$f['PartidaPresupuestal']?></td>
+					</tr>
 					<?php
 				}
-				else {
-					?>
-		            <tr class="trListaBody" onClick="<?=$ventana?>(['<?=$f['CodItem']?>','<?=$f['Descripcion']?>','<?=$f['CodUnidad']?>'], ['<?=$campo1?>','<?=$campo2?>','<?=$campo3?>']);">
-		            <?php
-				}
 				?>
-					<td align="center"><?=$f['CodItem']?></td>
-					<td align="center"><?=$f['CodInterno']?></td>
-					<td><?=htmlentities($f['Descripcion'])?></td>
-					<td align="center"><?=$f['CodUnidad']?></td>
-					<td align="center"><?=$f['CodUnidadComp']?></td>
-					<td align="right"><?=number_format($f['StockActual'],2,',','.')?></td>
-					<td align="right"><?=number_format($f['StockActualEqui'],2,',','.')?></td>
-					<td align="right"><?=number_format($f['MontoVentaUnitario'],2,',','.')?></td>
-					<td align="right"><?=number_format($f['MontoVenta'],2,',','.')?></td>
-					<td align="center"><?=$f['CodLinea']?></td>
-					<td align="center"><?=$f['CodFamilia']?></td>
-					<td align="center"><?=$f['CodSubFamilia']?></td>
-					<td><?=htmlentities($f['NomTipoItem'])?></td>
-					<td><?=htmlentities($f['NomMarca'])?></td>
-					<td align="right"><?=number_format($f['FactorImpuesto'],2,',','.')?></td>
-					<td align="center"><?=$f['PartidaPresupuestal']?></td>
-				</tr>
-				<?php
-			}
-			?>
 		    </tbody>
 		</table>
 	</div>
@@ -385,6 +418,19 @@ $_width = 900;
 	}
 	
 	function selListaPrecios(valores, inputs) {
+		parent.$('#PorcMargen').val('0,00');
+		parent.$('#PrecioCosto').val('0,00');
+		parent.$('#PrecioCostoUnitario').val('0,00');
+		parent.$('#PrecioMenor').val('0,00');
+		parent.$('#PrecioMayor').val('0,00');
+		parent.$('#PrecioUnitario').val('0,00');
+		parent.$('#PrecioEspecial').val('0,00');
+		parent.$('#PorcentajeDcto1').val('0,00');
+		parent.$('#PorcentajeDcto2').val('0,00');
+		parent.$('#PorcentajeDcto3').val('0,00');
+		parent.$('#PrecioEspecialVta').val('0,00');
+		parent.$('#CantidadMayor').val('0,00');
+		
 		if (inputs) {
 			for(var i=0; i<inputs.length; i++) {
 				if (parent.$("#"+inputs[i]).length > 0) parent.$("#"+inputs[i]).val(valores[i]);

@@ -24,6 +24,7 @@ if ($modulo == "formulario") {
 		$iCodPersonaVendedor = (!empty($CodPersonaVendedor)?"CodPersonaVendedor = '$CodPersonaVendedor',":'');
 		$iCodAlmacen = (!empty($CodAlmacen)?"CodAlmacen = '$CodAlmacen',":'');
 		$iFlagCotizacion = (($accion == 'generar')?"FlagCotizacion = 'S',":'');
+		$iCodCotizacion = (!empty($CodCotizacion)?"CodCotizacion = '$CodCotizacion',":'');
 		##	valido
 		if (!trim($CodOrganismo) || !trim($CodEstablecimiento) || !trim($CodPersonaCliente) || !trim($FechaDocumento) || !trim($FechaVencimiento) || !trim($CodCentroCosto) || !trim($CodFormaPago)) die("Debe llenar los campos (*) obligatorios.");
 		##	codigo
@@ -60,6 +61,7 @@ if ($modulo == "formulario") {
 					PreparadoPor = '$PreparadoPor',
 					FechaPreparado = '$FechaPreparado',
 					$iFlagCotizacion
+					$iCodCotizacion
 					VoucherPeriodo = '$VoucherPeriodo',
 					FlagContabilizacionPendiente = '$FlagContabilizacionPendiente',
 					FlagContabilizacionPendientePub20 = '$FlagContabilizacionPendientePub20',
@@ -82,7 +84,7 @@ if ($modulo == "formulario") {
 			$detalle_PorcentajeDcto2[$i] = setNumero($detalle_PorcentajeDcto2[$i]);
 			$detalle_PorcentajeDcto3[$i] = setNumero($detalle_PorcentajeDcto3[$i]);
 			$detalle_MontoDcto[$i] = setNumero($detalle_MontoDcto[$i]);
-			$detalle_FlagExonIva[$i] = (!empty($detalle_FlagExonIva[$i])?'S':'N');
+			// $detalle_FlagExonIva[$i] = (!empty($detalle_FlagExonIva[$i])?'S':'N');
 			if (floatval($detalle_PrecioUnit[$i]) <> floatval($detalle_PrecioUnitOriginal[$i]))
 				$FlagPrecioModificado = 'S';
 			else
@@ -187,7 +189,7 @@ if ($modulo == "formulario") {
 		} else $message = "|";
 		##	-----------------
 		mysql_query("COMMIT");
-		##	
+		##
 		die($message);
 	}
 	//	modificar
@@ -259,7 +261,7 @@ if ($modulo == "formulario") {
 			$detalle_PorcentajeDcto2[$i] = setNumero($detalle_PorcentajeDcto2[$i]);
 			$detalle_PorcentajeDcto3[$i] = setNumero($detalle_PorcentajeDcto3[$i]);
 			$detalle_MontoDcto[$i] = setNumero($detalle_MontoDcto[$i]);
-			$detalle_FlagExonIva[$i] = (!empty($detalle_FlagExonIva[$i])?'S':'N');
+			// $detalle_FlagExonIva[$i] = (!empty($detalle_FlagExonIva[$i])?'S':'N');
 			if (floatval($detalle_PrecioUnit[$i]) <> floatval($detalle_PrecioUnitOriginal[$i]))
 				$FlagPrecioModificado = 'S';
 			else
@@ -442,7 +444,7 @@ if ($modulo == "formulario") {
 			$detalle_PrecioUnitOriginal[$i] = setNumero($detalle_PrecioUnitOriginal[$i]);
 			$detalle_PorcentajeDcto[$i] = setNumero($detalle_PorcentajeDcto[$i]);
 			$detalle_MontoDcto[$i] = setNumero($detalle_MontoDcto[$i]);
-			$detalle_FlagExonIva[$i] = (!empty($detalle_FlagExonIva[$i])?'S':'N');
+			// $detalle_FlagExonIva[$i] = (!empty($detalle_FlagExonIva[$i])?'S':'N');
 			if (floatval($detalle_PrecioUnit[$i]) <> floatval($detalle_PrecioUnitOriginal[$i]))
 				$FlagPrecioModificado = 'S';
 			else
@@ -773,6 +775,8 @@ elseif ($modulo == "ajax") {
 	if ($accion == "detalle_insertar") {
 		$id = $nro_detalles;
 		$Cantidad = setNumero($Cantidad);
+		$igv = getVar3("SELECT FactorPorcentaje FROM mastimpuestos WHERE CodImpuesto = '$_PARAMETRO[COIVA]'");
+		$igvp = $igv / 100 + 1;
 		if (!empty($CodItem))
 		{
 			$sql = "SELECT
@@ -807,7 +811,8 @@ elseif ($modulo == "ajax") {
 		foreach ($field as $f)
 		{
 			$MontoTotal = $f['PrecioVenta'] * $Cantidad;
-			$PrecioUnitFinal = $f['PrecioVenta'] / $igvp;
+			if ($_PARAMETRO['LISTPRECIVA'] == 'N') $PrecioUnitFinal = $f['PrecioVenta'];
+			else $PrecioUnitFinal = $f['PrecioVenta'] / $igvp;
 			$MontoTotalFinal = $PrecioUnitFinal * $Cantidad;
 			?>
 			<tr class="trListaBody" onclick="clk($(this), 'detalle', 'detalle_<?=$id?>');" id="detalle_<?=$id?>">
@@ -858,13 +863,14 @@ elseif ($modulo == "ajax") {
 					<input type="text" name="detalle_CantidadPedida[]" value="<?=number_format($Cantidad,5,',','.')?>" class="cell currency5" style="text-align:right;" onchange="setMontosVentas();">
 				</td>
 				<td>
-					<input type="text" name="detalle_PrecioUnit[]" id="detalle_PrecioUnit<?=$id?>" value="<?=number_format($f['MontoVenta'],2,',','.')?>" class="cell currency" style="text-align:right;" onchange="setMontosVentas(true, '<?=$id?>');">
+					<input type="text" name="detalle_PrecioUnit[]" id="detalle_PrecioUnit<?=$id?>" value="<?=number_format($f['MontoVenta'],2,',','.')?>" class="cell currency" style="text-align:right;" onchange="setMontosVentas(true, '<?=$id?>');" <?=($_PARAMETRO['EDITPRECIO'] == 'N')?'disabled':''?>>
 				</td>
 				<td>
 					<input type="text" name="detalle_MontoTotal[]" value="<?=number_format($MontoTotal,2,',','.')?>" class="cell2 " style="text-align:right;" readonly>
 				</td>
 				<td align="center">
-					<input type="checkbox" name="detalle_FlagExonIva[]" value="S" <?=chkFlag($f['FlagExonIva'])?> onchange="setMontosVentas();" onclick="this.checked=!this.checked">
+					<input type="hidden" name="detalle_FlagExonIva[]" value="<?=$f['FlagExonIva']?>">
+					<input type="checkbox" name="detalle_chkExonIva[]" <?=chkFlag($f['FlagExonIva'])?> onclick="this.checked=!this.checked">
 				</td>
 				<td>
 					<input type="text" name="detalle_PrecioUnitOriginal[]" id="detalle_PrecioUnitOriginal<?=$id?>" value="<?=number_format($f['MontoVenta'],2,',','.')?>" class="cell2 " style="text-align:right;" readonly>

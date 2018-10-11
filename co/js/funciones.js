@@ -1,4 +1,5 @@
-function setMontosVentas(pu, id) {
+function setMontosVentas() {
+	var LISTPRECIVA = $('#LISTPRECIVA').val(); 
 	var MontoAfecto = 0;
 	var MontoNoAfecto = 0;
 	var MontoImpuesto = 0;
@@ -15,7 +16,7 @@ function setMontosVentas(pu, id) {
 
 	//	
 	$('input[name="detalle_Secuencia[]"]').each(function(idx) {
-		var detalle_FlagExonIva = $('input[name="detalle_FlagExonIva[]"]:eq('+idx+')').prop('checked');
+		var detalle_FlagExonIva = $('input[name="detalle_chkExonIva[]"]:eq('+idx+')').prop('checked');
 		var detalle_CantidadPedida = setNumero($('input[name="detalle_CantidadPedida[]"]:eq('+idx+')').val());
 		var detalle_PrecioUnit = setNumero($('input[name="detalle_PrecioUnit[]"]:eq('+idx+')').val());
 		var detalle_PrecioUnitOriginal = setNumero($('input[name="detalle_PrecioUnitOriginal[]"]:eq('+idx+')').val());
@@ -36,7 +37,10 @@ function setMontosVentas(pu, id) {
 
 		var detalle_MontoTotal = detalle_CantidadPedida * detalle_PrecioUnit;
 
-		if (!detalle_FlagExonIva) var detalle_PrecioUnitFinal = detalle_PrecioUnit / igvp;
+		if (!detalle_FlagExonIva) {
+			if (LISTPRECIVA == 'N') var detalle_PrecioUnitFinal = detalle_PrecioUnit;
+			else var detalle_PrecioUnitFinal = detalle_PrecioUnit / igvp;
+		}
 		else var detalle_PrecioUnitFinal = detalle_PrecioUnit;
 		
 		var detalle_MontoTotalFinal = detalle_CantidadPedida * detalle_PrecioUnitFinal;
@@ -225,13 +229,23 @@ function cambiarUnidad(i) {
 	var CodUnidadVenta = $('#detalle_CodUnidadVenta'+i).val();
 	var MontoVenta = new Number($('#detalle_MontoVenta'+i).val());
 	var MontoVentaUnitario = new Number($('#detalle_MontoVentaUnitario'+i).val());
+	var PrecioEspecial = $('#detalle_PrecioEspecial'+i).val();
+	var PrecioEspecialVta = $('#detalle_PrecioEspecialVta'+i).val();
+	var FlagPrecioEspecial = $('#detalle_FlagPrecioEspecial'+i).val();
 
-	if (CodUnidad == CodUnidadVenta) {
-		$('#detalle_PrecioUnit'+i).val(MontoVentaUnitario).formatCurrency();
-		$('#detalle_PrecioUnitOriginal'+i).val(MontoVentaUnitario).formatCurrency();
+	if (FlagPrecioEspecial != 'S') {
+		if (CodUnidad == CodUnidadVenta) {
+			$('#detalle_PrecioUnit'+i).val(MontoVentaUnitario).formatCurrency();
+			$('#detalle_PrecioUnitOriginal'+i).val(MontoVentaUnitario).formatCurrency();
+		} else {
+			$('#detalle_PrecioUnit'+i).val(MontoVenta).formatCurrency();
+			$('#detalle_PrecioUnitOriginal'+i).val(MontoVenta).formatCurrency();
+		}
 	} else {
-		$('#detalle_PrecioUnit'+i).val(MontoVenta).formatCurrency();
-		$('#detalle_PrecioUnitOriginal'+i).val(MontoVenta).formatCurrency();
+		if (CodUnidad == CodUnidadVenta)
+			$('#detalle_PrecioUnit'+i).val(PrecioEspecial).formatCurrency();
+		else
+			$('#detalle_PrecioUnit'+i).val(PrecioEspecialVta).formatCurrency();
 	}
 	$('#detalle_MontoDcto'+i).val('0').formatCurrency();
 	$('#detalle_PorcentajeDcto'+i).val('0').formatCurrency();

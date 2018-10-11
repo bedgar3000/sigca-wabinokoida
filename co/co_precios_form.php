@@ -256,30 +256,26 @@ $_width = 800;
 		var FlagImpuestoVentas = $('#FlagImpuestoVentas').val();
 		var FactorImpuesto = new Number($('#FactorImpuesto').val());
 		var CantidadEqui = new Number($('#CantidadEqui').val());
+		var PrecioEspecial = new Number(setNumero($('#PrecioEspecial').val()));
 		
 		var PorcMargen = setNumero($('#PorcMargen').val());
-		//var PrecioCosto = setNumero($('#PrecioCosto').val());
 		var PrecioCostoUnitario = setNumero($('#PrecioCostoUnitario').val());
 		
 		if ('<?=$_PARAMETRO['LISTPRECIVA']?>' == 'S') {
 			if (FlagImpuestoVentas == 'S') {
 				var PrecioMenor = (PrecioCostoUnitario / (1 - (PorcMargen / 100))) + ((PrecioCostoUnitario / (1 - (PorcMargen / 100))) * FactorImpuesto / 100);
-				//var PrecioUnitario = (PrecioCostoUnitario / (1 - (PorcMargen / 100))) + ((PrecioCostoUnitario / (1 - (PorcMargen / 100))) * 12 / 100);
 			} else {
 				var PrecioMenor = (PrecioCostoUnitario / (1 - (PorcMargen / 100)));
-				//var PrecioUnitario = (PrecioCostoUnitario / (1 - (PorcMargen / 100)));
 			}
 		} else {
 			var PrecioMenor = (PrecioCostoUnitario / (1 - (PorcMargen / 100)));
-			//var PrecioUnitario = (PrecioCostoUnitario / (1 - (PorcMargen / 100)));
 		}
 		var PrecioCosto = PrecioMenor * CantidadEqui;
-		//var PrecioMenor = PrecioCosto / (1 - (PorcMargen / 100));
-		//var PrecioUnitario = PrecioCostoUnitario / (1 - (PorcMargen / 100));
-
+		var PrecioEspecialVta = PrecioEspecial * CantidadEqui;
+		
 		$('#PrecioMenor').val(PrecioMenor).formatCurrency();
 		$('#PrecioCosto').val(PrecioCosto).formatCurrency();
-		//$('#PrecioUnitario').val(PrecioUnitario).formatCurrency();
+		$('#PrecioEspecialVta').val(PrecioEspecialVta).formatCurrency();
 	}
 	function setPrecioEspecialVenta() {
 		var PrecioEspecial = setNumero($('#PrecioEspecial').val());

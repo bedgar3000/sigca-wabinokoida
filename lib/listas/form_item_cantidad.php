@@ -38,7 +38,7 @@ $field = getRecord($sql);
 	<tr>
 		<td class="tagForm">Cantidad:</td>
 		<td>
-			<input type="text" name="Cantidad" id="Cantidad" value="" style="width:100px; text-align:right;" autofocus="autofocus">
+			<input type="text" name="Cantidad" id="Cantidad" value="1" style="width:100px; text-align:right;" autofocus="autofocus">
 		</td>
 		<td class="tagForm">Unidad Venta:</td>
 		<td width="5">
@@ -48,3 +48,14 @@ $field = getRecord($sql);
 		</td>
 	</tr>
 </table>
+
+<script>
+	$("#Cantidad").focus(function(){	   
+		this.select();
+	});
+	$("#Cantidad").keypress(function(e) {
+		if(e.which == 13) {
+			$('.ui-dialog-buttonset button').click();
+		}
+	});
+</script>

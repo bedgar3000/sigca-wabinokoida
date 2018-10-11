@@ -90,6 +90,10 @@ body {
 	font-size:10px;
 }
 
+.tblLista tfoot th {
+	padding-right: 8px;
+}
+
 .trListaBody {
 	background-color:#E9E9E9;
 	font-family: "Lucida Grande", Verdana, Arial, Helvetica, sans-serif;

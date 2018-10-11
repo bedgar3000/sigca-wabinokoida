@@ -1521,6 +1521,22 @@ function printBodyCompetenciasCargo($CodCargo, $TipoEvaluacion, $w, $h) {
 	}
 }
 
+// 13-09-2018 devuelve el valor maximo UT-UCAU o SBM como campo
+function getUTN($Anio, $tabla, $caso, $campo){
+	
+    if ($caso=='SBM') $filtro= " ut.Secuencia =(Select Max(Secuencia) From $tabla Where Periodo Like '".$Anio."%') ";
+    elseif ($caso=='UT' or $caso=='UCAU') $filtro= " ut.Anio='".$Anio."' AND ut.Secuencia = (SELECT MAX(Secuencia) FROM $tabla WHERE Anio = ut.Anio) "; 
+
+	$sql = "SELECT ut.$campo
+			  FROM $tabla ut
+			 WHERE $filtro
+			       LIMIT 0, 1";
+	$query = mysql_query($sql) or die(getErrorSql(mysql_errno(), mysql_error(), $sql));
+	if (mysql_num_rows($query) != 0) $field = mysql_fetch_array($query);
+	return $field[0];
+}
+//
+
 //	devuelve el valor de un campo
 function getUT($Anio, $Secuencia=NULL) {
 	if ($Secuencia != "") {
