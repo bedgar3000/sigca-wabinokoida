@@ -222,7 +222,6 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
 	if (!afectaTipoServicio($field_obligacion['CodTipoServicio'])) {
 		$dFlagNoAfectoIGV = "disabled";
 	}
-	$FactorImpuesto = getPorcentajeIVA($field_obligacion['CodTipoServicio']);
 	$Anio = substr($field_obligacion['Periodo'], 0, 4);
 	$action = "gehen.php?anz=$origen";
 }
@@ -836,6 +835,7 @@ elseif ($opcion == "adelanto-generar") {
 	##	
 	$action = "gehen.php?anz=$origen";
 }
+if (!$field_obligacion['FactorImpuesto']) $field_obligacion['FactorImpuesto'] = getPorcentajeIVA($field_obligacion['CodTipoServicio']);
 //	------------------------------------
 $_width = 1100;
 ?>
@@ -885,7 +885,7 @@ $_width = 1100;
 <input type="hidden" name="fFechaRegistrod" id="fFechaRegistrod" value="<?=$fFechaRegistrod?>" />
 <input type="hidden" name="fFechaRegistroh" id="fFechaRegistroh" value="<?=$fFechaRegistroh?>" />
 <input type="hidden" name="FlagPagoDiferido" id="FlagPagoDiferido" value="<?=$FlagPagoDiferido?>" />
-<input type="hidden" name="FactorImpuesto" id="FactorImpuesto" value="<?=$FactorImpuesto?>" />
+<!-- <input type="hidden" name="FactorImpuesto" id="FactorImpuesto" value="<?=$FactorImpuesto?>" /> -->
 <input type="hidden" name="Periodo" id="Periodo" value="<?=$field_obligacion['Periodo']?>" />
 <input type="hidden" name="Anio" id="Anio" value="<?=$Anio?>" />
 <input type="hidden" name="PeriodoActual" id="PeriodoActual" value="<?=substr($Ahora, 0, 7)?>" />
@@ -1154,6 +1154,7 @@ $_width = 1100;
 			<td class="tagForm">Impuesto:</td>
 			<td>
 	        	<input type="text" id="MontoImpuesto" value="<?=number_format($field_obligacion['MontoImpuesto'], 2, ',', '.')?>" style="width:150px; text-align:right;" onfocus="numeroFocus(this);" onblur="numeroBlur(this);" onchange="cambiar_monto_impuesto();" />
+				<input type="text" id="FactorImpuesto" value="<?=number_format($field_obligacion['FactorImpuesto'],2)?>" style="text-align:right; width:35px;" disabled />
 	        </td>
 		</tr>
 	    <tr>
@@ -2255,12 +2256,32 @@ $_width = 1100;
 					$("#lista_impuesto").html("");
 					$(".FlagNoAfectoIGV").attr("disabled", "disabled").attr("checked", "checked");
 				}
-				//	actualizo valores
-				<?php
-				if ($opcion != "generar-valuacion") {
-					?>actualizarMontosObligacion();<?php
+				setTipoServicio(CodTipoServicio);
+			}
+		});
+	}
+	
+	/**
+	 * Cambio de tipo de servicio
+	 * @param CodTipoServicio 	(Tipo de servicio seleccionado)
+	 */
+	function setTipoServicio(CodTipoServicio) {
+		$.ajax({
+			type: "POST",
+			url: "../lib/fphp_funciones_ajax.php",
+			data: "accion=getPorcentajeIVA&CodTipoServicio="+CodTipoServicio,
+			async: false,
+			dataType: 'json',
+			success: function(data) {
+				if (data.status == 'success') {
+					$('#FactorImpuesto').val(data.FactorPorcentaje);
+					//	actualizo valores
+					<?php
+					if ($opcion != "generar-valuacion") {
+						?>actualizarMontosObligacion();<?php
+					}
+					?>
 				}
-				?>
 			}
 		});
 	}

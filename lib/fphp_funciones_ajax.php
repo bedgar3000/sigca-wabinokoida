@@ -1721,13 +1721,19 @@ elseif ($accion == "orden_compra_detalles_insertar") {
 	if ($Tipo == "item") {
 		$readonly = "readonly";
 		$sql = "SELECT
-					*,
-					CtaGasto AS CodCuenta,
-					CtaGastoPub20 AS CodCuentaPub20,
-					PartidaPresupuestal AS cod_partida,
-					CodUnidadComp AS CodUnidadCompra
-				FROM lg_itemmast
-				WHERE CodItem = '".$Codigo."'";
+					i.*,
+					i.CtaGasto AS CodCuenta,
+					i.CtaGastoPub20 AS CodCuentaPub20,
+					i.PartidaPresupuestal AS cod_partida,
+					i.CodUnidadComp AS CodUnidadCompra,
+					iu.Valor AS ValorRec
+				FROM lg_itemmast i
+				LEFT JOIN lg_itemunidades iu ON (
+					iu.CodItem = i.CodItem
+					AND iu.CodUnidad = i.CodUnidadComp
+					AND iu.CodUnidadConv = i.CodUnidad
+				)
+				WHERE i.CodItem = '".$Codigo."'";
 		$disabled_descripcion = "disabled";
 		$CodItem = $Codigo;
 	} else {
@@ -1803,6 +1809,7 @@ elseif ($accion == "orden_compra_detalles_insertar") {
                 </select>
             </td>
 			<td align="center">
+				<input type="hidden" name="ValorRec" value="<?=$field_detalles['ValorRec']?>">
             	<input type="text" name="CantidadRec" class="cell" style="text-align:right;" value="0,00" onBlur="numeroBlur(this);" onFocus="numeroFocus(this);" />
             </td>
 			<td align="center">

@@ -617,7 +617,7 @@ $_width = 900;
 		<td class="titulo"><?=$_titulo?></td>
 		<td align="right"><a class="cerrar" href="#" onclick="<?=$clkCancelar?>">[cerrar]</a></td>
 	</tr>
-</table><hr width="100%" color="#333333" /><br />
+</table><hr width="100%" color="#333333" />
 
 <table align="center" cellpadding="0" cellspacing="0" style="width:<?=$_width?>px;">
     <tr>

@@ -25,7 +25,7 @@ if ($fBuscar != "") {
 		<td class="titulo">Recepci&oacute;n en Almacen</td>
 		<td align="right"><a class="cerrar" href="../framemain.php">[cerrar]</a></td>
 	</tr>
-</table><hr width="100%" color="#333333" /><br />
+</table><hr width="100%" color="#333333" />
 
 <form name="frmentrada" id="frmentrada" action="gehen.php?anz=lg_almacen_recepcion_lista" method="post">
 <input type="hidden" name="concepto" id="concepto" value="<?=$concepto?>" />

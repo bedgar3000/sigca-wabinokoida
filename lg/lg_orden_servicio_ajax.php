@@ -338,6 +338,7 @@ if ($modulo == "orden_servicio") {
 					CodTipoPago = '".$CodTipoPago."',
 					PlazoEntrega = '".$PlazoEntrega."',
 					FechaEntrega = '".formatFechaAMD($FechaEntrega)."',
+					CodTipoServicio = '".$CodTipoServicio."',
 					MontoOriginal = '".setNumero($MontoOriginal)."',
 					MontoNoAfecto = '".setNumero($MontoNoAfecto)."',
 					MontoIva = '".setNumero($MontoIva)."',

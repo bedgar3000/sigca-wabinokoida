@@ -65,6 +65,8 @@ function obligacion_documentos_insertar(registro) {
 				opener.$("#lista_distribucion").append(partes[2]);
 				opener.$("#nro_distribucion").val(partes[3]);
 				opener.$("#can_distribucion").val(partes[3]);
+				opener.$("#Comentarios").val(partes[4]);
+				opener.$("#ComentariosAdicional").val(partes[4]);
 				//	desbloqueo lista de retenciones
 				opener.$("#btInsertarImpuesto").removeAttr("disabled");
 				opener.$("#btQuitarImpuesto").removeAttr("disabled");

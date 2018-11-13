@@ -45,6 +45,18 @@ $sql = "SELECT
 		ORDER BY FechaRequisicion DESC";
 $query_mast = mysql_query($sql) or die (mysql_error());
 if (mysql_num_rows($query_mast) != 0) $field_mast = mysql_fetch_array($query_mast);
+##	
+$sql = "SELECT
+			o.*,
+			c.Ciudad,
+			c.CodPostal,
+			e.Estado AS NomEstado
+		FROM mastorganismos o
+		LEFT JOIN mastciudades c ON c.CodCiudad = o.CodCiudad
+		LEFT JOIN mastmunicipios m ON m.CodMunicipio = c.CodMunicipio
+		LEFT JOIN mastestados e ON e.CodEstado = m.CodEstado
+		WHERE o.CodOrganismo = '$field_mast[CodOrganismo]'";
+$field_organismo = getRecord($sql);
 //---------------------------------------------------
 
 //---------------------------------------------------
@@ -141,8 +153,10 @@ class PDF extends FPDF {
 	function Header() {
 		global $field_mast;
 		global $hoja_anexa;
+		global $field_organismo;
+		global $_PARAMETRO;
 		//------
-		$this->Image('../imagenes/logos/logo-alcaldia.jpg', 10, 10, 15, 13);	
+		$this->Image($_PARAMETRO['PATHLOGO'].$field_organismo['Logo'], 10, 11, 15, 11);
 		$this->SetFont('Arial', 'B', 8);
 		$this->SetXY(25, 10); $this->Cell(195, 5, utf8_decode($field_mast['Organismo']), 0, 0, 'L');
 		$this->SetXY(25, 13); 
@@ -227,7 +241,7 @@ class PDF extends FPDF {
 		//---------------------------------------------------
 		//	obtengo las firmas
 		list($_PREPARADO['Nombre'], $_PREPARADO['Cargo'], $_PREPARADO['Nivel']) = getFirma($field_mast['PreparadaPor']);
-		list($_REVISADO['Nombre'], $_REVISADO['Cargo'], $_REVISADO['Nivel']) = getFirma(getPersonaUnidadEjecutora($_PARAMETRO["CATCOMPRAS"]));
+		list($_REVISADO['Nombre'], $_REVISADO['Cargo'], $_REVISADO['Nivel']) = getFirma($_PARAMETRO["FIRMAOP3"]);
 		list($_APROBADO['Nombre'], $_APROBADO['Cargo'], $_APROBADO['Nivel']) = getFirma(getPersonaUnidadEjecutora($_PARAMETRO["CATADM"]));
 		//---------------------------------------------------
 		$this->SetXY(10, -40);		
@@ -301,7 +315,7 @@ $pdf->SetXY(10, $y);
 $pdf->SetDrawColor(0, 0, 0); $pdf->SetFillColor(0, 0, 0);
 $pdf->Rect(10, $y, 195, 0.1, "DF");
 //----
-$tipo_impuesto = "(".$field_mast['CodTipoServicio']." ".number_format($field_mast['FactorPorcentaje'], 2, ',', '.')." %): ";
+$tipo_impuesto = "(".$field_mast['CodTipoServicio']." ".number_format($field_mast['FactorImpuesto'], 2, ',', '.')." %): ";
 $monto_total_en_letras = convertir_a_letras($field_mast['TotalMontoIva'], "moneda");
 $pdf->SetFillColor(245, 245, 245);
 $pdf->SetFont('Arial', 'B', 8);

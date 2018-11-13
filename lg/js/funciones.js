@@ -36,6 +36,11 @@ function setMontosOrdenCompra(frm_detalles) {
 			var Total = new Number(PrecioUnitTotal * CantidadPedida);
 			n.value = setNumeroFormato(Total, 2, '.', ',');
 		}
+		else if (n.name == 'ValorRec') var ValorRec = Number(n.value);
+		else if (n.name == 'CantidadRec') {
+			var CantidadRec = CantidadPedida * ValorRec;
+			n.value = setNumeroFormato(CantidadRec, 2, '.', ',');
+		}
 	}
 	var MontoIGV = MontoAfecto * FactorImpuesto / 100;
 	var MontoBruto = new Number(MontoAfecto + MontoNoAfecto);

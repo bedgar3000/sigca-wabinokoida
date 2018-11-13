@@ -419,7 +419,7 @@ $_width = 900;
 	
 	function selListaPrecios(valores, inputs) {
 		parent.$('#PorcMargen').val('0,00');
-		parent.$('#PrecioCosto').val('0,00');
+		parent.$('#PrecioMenor').val('0,00');
 		parent.$('#PrecioCostoUnitario').val('0,00');
 		parent.$('#PrecioMenor').val('0,00');
 		parent.$('#PrecioMayor').val('0,00');

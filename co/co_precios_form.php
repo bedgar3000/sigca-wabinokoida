@@ -89,7 +89,7 @@ $_width = 800;
 	<input type="hidden" name="CodPrecio" id="CodPrecio" value="<?=$field['CodPrecio']?>" />
 	<input type="hidden" name="FlagImpuestoVentas" id="FlagImpuestoVentas" value="<?=$field['FlagImpuestoVentas']?>" />
 	<input type="hidden" name="CodImpuesto" id="CodImpuesto" value="<?=$field['CodImpuesto']?>" />
-	<input type="hidden" name="FactorImpuesto" id="FactorImpuesto" value="<?=$field['FactorImpuesto']?>" />
+	<input type="" name="FactorImpuesto" id="FactorImpuesto" value="<?=$field['FactorImpuesto']?>" />
 	<input type="hidden" name="CantidadEqui" id="CantidadEqui" value="<?=$field['CantidadEqui']?>" />
 	
 	<table style="width:100%; max-width:<?=$_width?>px;" class="tblForm">
@@ -117,7 +117,7 @@ $_width = 800;
 					<input type="hidden" name="CodItem" id="CodItem" value="<?=$field['CodItem']?>" />
 					<input type="text" name="CodInterno" id="CodInterno" value="<?=$field['CodInterno']?>" style="width:75px;" readonly />
 					<input type="text" name="Item" id="Item" value="<?=$field['Item']?>" style="width:256px;" disabled />
-					<a href="../lib/listas/gehen.php?anz=lista_lg_items&filtrar=default&campo1=CodItem&campo2=Item&campo3=CodInterno&campo4=CodUnidad&campo5=CodUnidadVenta&campo6=PrecioCostoUnitario&campo7=PrecioCosto&campo8=FlagImpuestoVentas&campo9=CodImpuesto&campo10=FactorImpuesto&campo11=CantidadEqui&ventana=co_precios&iframe=true&width=100%&height=100%" rel="prettyPhoto[iframe1]" style=" <?=$display_modificar?>">
+					<a href="../lib/listas/gehen.php?anz=lista_lg_items&filtrar=default&campo1=CodItem&campo2=Item&campo3=CodInterno&campo4=CodUnidad&campo5=CodUnidadVenta&campo6=PrecioCostoUnitario&campo7=PrecioMenor&campo8=FlagImpuestoVentas&campo9=CodImpuesto&campo10=FactorImpuesto&campo11=CantidadEqui&ventana=co_precios&iframe=true&width=100%&height=100%" rel="prettyPhoto[iframe1]" style=" <?=$display_modificar?>">
 		            	<img src="../imagenes/f_boton.png" width="20" title="Seleccionar" align="absbottom" style="cursor:pointer;" />
 		            </a>
 				</td>
@@ -192,7 +192,7 @@ $_width = 800;
 			<td>
 				<input type="text" name="PrecioMayor" id="PrecioMayor" value="<?=number_format($field['PrecioMayor'],2,',','.')?>" style="width:125px; text-align: right;" class="currency" <?=$disabled_ver?> />
 			</td>
-			<td class="tagForm">* Precio Unitario:</td>
+			<td class="tagForm">* Precio Unit. Venta:</td>
 			<td>
 				<input type="text" name="PrecioUnitario" id="PrecioUnitario" value="<?=number_format($field['PrecioUnitario'],2,',','.')?>" style="width:125px; text-align: right;" class="currency" <?=$disabled_ver?> />
 			</td>
@@ -263,19 +263,23 @@ $_width = 800;
 		
 		if ('<?=$_PARAMETRO['LISTPRECIVA']?>' == 'S') {
 			if (FlagImpuestoVentas == 'S') {
-				var PrecioMenor = (PrecioCostoUnitario / (1 - (PorcMargen / 100))) + ((PrecioCostoUnitario / (1 - (PorcMargen / 100))) * FactorImpuesto / 100);
+				var PrecioUnitario = (PrecioCostoUnitario / (1 - (PorcMargen / 100))) + ((PrecioCostoUnitario / (1 - (PorcMargen / 100))) * FactorImpuesto / 100);
+				var PrecioCosto = ((PrecioCostoUnitario * FactorImpuesto / 100) + PrecioCostoUnitario) * CantidadEqui;
 			} else {
-				var PrecioMenor = (PrecioCostoUnitario / (1 - (PorcMargen / 100)));
+				var PrecioUnitario = (PrecioCostoUnitario / (1 - (PorcMargen / 100)));
+				var PrecioCosto = PrecioCostoUnitario * CantidadEqui;
 			}
 		} else {
-			var PrecioMenor = (PrecioCostoUnitario / (1 - (PorcMargen / 100)));
+			var PrecioUnitario = (PrecioCostoUnitario / (1 - (PorcMargen / 100)));
+			var PrecioCosto = PrecioCostoUnitario * CantidadEqui;
 		}
-		var PrecioCosto = PrecioMenor * CantidadEqui;
+		var PrecioMenor = PrecioUnitario * CantidadEqui;
 		var PrecioEspecialVta = PrecioEspecial * CantidadEqui;
 		
+		$('#PrecioUnitario').val(PrecioUnitario).formatCurrency();
 		$('#PrecioMenor').val(PrecioMenor).formatCurrency();
-		$('#PrecioCosto').val(PrecioCosto).formatCurrency();
 		$('#PrecioEspecialVta').val(PrecioEspecialVta).formatCurrency();
+		$('#PrecioCosto').val(PrecioCosto).formatCurrency();
 	}
 	function setPrecioEspecialVenta() {
 		var PrecioEspecial = setNumero($('#PrecioEspecial').val());

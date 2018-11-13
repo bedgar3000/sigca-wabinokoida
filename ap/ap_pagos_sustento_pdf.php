@@ -47,8 +47,8 @@ $sql = "SELECT
 			p2.DescripCargo AS CargoRevisadoEncargado
 		FROM
 			mastpersonas mp
-			INNER JOIN mastempleado me ON (mp.CodPersona = me.CodPersona)
-			INNER JOIN rh_puestos p ON (me.CodCargo = p.CodCargo)
+			LEFT JOIN mastempleado me ON (mp.CodPersona = me.CodPersona)
+			LEFT JOIN rh_puestos p ON (me.CodCargo = p.CodCargo)
 			LEFT JOIN rh_puestos p2 ON (me.CodCargoTemp = p2.CodCargo)
 		WHERE mp.CodPersona = '".$_REVISADO."'";
 $query_revisado = mysql_query($sql) or die($sql.mysql_error());

@@ -252,6 +252,7 @@ $field_cc = getRecord($sql);
 	$detalle = split(";char:tr;", $detalles);
 	foreach ($detalle as $linea) {
 		list($_Linea, $CodItem, $Descripcion, $CodUnidad, $StockActual, $CantidadPedida, $CantidadCompra, $CantidadRecibida, $CantidadPendiente, $PrecioUnit, $FlagExonerado, $CodUnidadCompra, $PrecioUnitCompra, $CodCentroCosto) = split(";char:td;", $linea);
+		$StockActual = floatval($StockActual);
 		list($_Anio, $_CodOrganismo, $_NroOrden, $Secuencia) = split("[.]", $_Linea);
 		$Total = $CantidadPendiente * $PrecioUnit;
 		$CantidadPedidaCompra = $CantidadPendiente * $CantidadCompra / $CantidadPedida;

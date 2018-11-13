@@ -556,7 +556,7 @@ elseif($accion == "almacen_recepcion_detalles") {
 				<?=$field['Descripcion']?>
             </td>
 			<td align="center">
-				<?=$field['CodUnidad']?>
+				<?=$field['CodUnidadRec']?>
             </td>
 			<td align="right">
 				<?=number_format($field['StockActual'], 2, ',', '.')?>

@@ -61,6 +61,7 @@ if ($modulo == "obligacion") {
 					NroCuenta = '".$NroCuenta."',
 					CodTipoPago = '".$CodTipoPago."',
 					CodTipoServicio = '".$CodTipoServicio."',
+					FactorImpuesto = '".$FactorImpuesto."',
 					ReferenciaTipoDocumento = '".$ReferenciaTipoDocumento."',
 					ReferenciaNroDocumento = '".$ReferenciaNroDocumento."',
 					MontoObligacion = '".($MontoObligacion)."',
@@ -587,6 +588,7 @@ if ($modulo == "obligacion") {
 					NroCuenta = '".$NroCuenta."',
 					CodTipoPago = '".$CodTipoPago."',
 					CodTipoServicio = '".$CodTipoServicio."',
+					FactorImpuesto = '".$FactorImpuesto."',
 					MontoObligacion = '".($MontoObligacion)."',
 					MontoImpuestoOtros = '".($MontoImpuestoOtros)."',
 					MontoNoAfecto = '".($MontoNoAfecto)."',
@@ -2126,6 +2128,7 @@ elseif ($modulo == "ajax") {
 		$MontoImpuestos = $field_documentos['MontoIGV'] * $porcentaje_monto;
 		$monto_bruto = $MontoAfecto + $MontoNoAfecto;
 		$MontoTotal = $monto_bruto + $MontoImpuestos;
+		$Comentarios = $field_documentos['Comentarios'];
 		echo "||";
 		?>
 		<!--Documentos Relacionados-->
@@ -2440,6 +2443,7 @@ elseif ($modulo == "ajax") {
 			}
 		}
 		echo "||$nro_distribucion";
+		echo "||$Comentarios";
 	}
 	//	insertar linea en distribucion
 	elseif ($accion == "obligacion_distribucion_insertar") {

@@ -551,6 +551,16 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
 		while ($field_detalles = mysql_fetch_array($query_detalles)) {
 			$nrodetalles++;
 			if ($field_detalles['CodItem'] != "") {
+				$sql = "SELECT Valor As ValorRec
+						FROM lg_itemunidades
+						WHERE
+							CodItem = '$field_detalles[CodItem]'
+							AND CodUnidad = '$field_detalles[CodUnidad]'
+							AND CodUnidadConv = '$field_detalles[CodUnidadRec]'";
+				$ValorRec = getVar3($sql);
+				$field_detalles['ValorRec'] = $ValorRec;
+				$field_detalles['CantidadRec'] = $ValorRec * $field_detalles['CantidadPedida'];
+				##	
 				$disabled_descripcion = "readonly";
 				$Codigo = $field_detalles['CodItem'];
 				$CommoditySub = "";
@@ -613,10 +623,11 @@ elseif ($opcion == "modificar" || $opcion == "ver" || $opcion == "revisar" || $o
                 </td>
 				<td align="center">
 	            	<select name="CodUnidadRec" class="cell" <?=$disabled_ver?>>
-	                	<?=loadSelect2("mastunidades", "CodUnidad", "CodUnidad", $field_detalles['CodUnidadRec'], 0)?>
+	                	<?=loadSelect2("mastunidades", "CodUnidad", "CodUnidad", $field_detalles['CodUnidadRec'], 1)?>
 	                </select>
 	            </td>
 				<td align="center">
+					<input type="hidden" name="ValorRec" value="<?=$field_detalles['ValorRec']?>">
 	            	<input type="text" name="CantidadRec" class="cell" style="text-align:right;" value="<?=number_format($field_detalles['CantidadRec'], 2, ',', '.')?>" onBlur="numeroBlur(this);" onFocus="numeroFocus(this);" <?=$disabled_ver?> />
 	            </td>
 				<td align="center">

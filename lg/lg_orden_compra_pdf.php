@@ -35,6 +35,18 @@ $sql = "SELECT
 			oc.NroOrden = '".$NroOrden."'";
 $query_mast = mysql_query($sql) or die (mysql_error());
 if (mysql_num_rows($query_mast) != 0) $field_mast = mysql_fetch_array($query_mast);
+##	
+$sql = "SELECT
+			o.*,
+			c.Ciudad,
+			c.CodPostal,
+			e.Estado AS NomEstado
+		FROM mastorganismos o
+		LEFT JOIN mastciudades c ON c.CodCiudad = o.CodCiudad
+		LEFT JOIN mastmunicipios m ON m.CodMunicipio = c.CodMunicipio
+		LEFT JOIN mastestados e ON e.CodEstado = m.CodEstado
+		WHERE o.CodOrganismo = '$field_mast[CodOrganismo]'";
+$field_organismo = getRecord($sql);
 //---------------------------------------------------
 
 //---------------------------------------------------
@@ -44,9 +56,10 @@ class PDF extends FPDF {
 		global $_PARAMETRO;
 		global $field_mast;
 		global $hoja_anexa;
+		global $field_organismo;
 		
 		//	imprimo la cabecera
-		$this->Image($_PARAMETRO["PATHLOGO"].'logo-alcaldia.jpg', 15, 11, 11, 12);
+		$this->Image($_PARAMETRO['PATHLOGO'].$field_organismo['Logo'], 10, 11, 15, 11);
 		$this->SetFont('Arial', 'B', 8);
 		$this->SetXY(25, 10); $this->Cell(195, 5, utf8_decode($field_mast['Organismo']), 0, 0, 'L');
 		$this->SetXY(25, 13); 
@@ -87,7 +100,7 @@ class PDF extends FPDF {
 			$this->Cell(95, 5, $field_mast['DocFiscalProveedor'], 0, 0, 'L');
 			$this->Ln(6);
 			$this->Cell(30, 5, utf8_decode('Dirección: '), 0, 0, 'L', 1);
-			$this->Cell(95, 5, utf8_decode($field_mast['Direccion']), 0, 0, 'L');
+			$this->Cell(95, 5, utf8_decode(substr($field_mast['Direccion'],0,50)), 0, 0, 'L');
 			$this->Cell(30, 5, ('S.N.C.: '), 0, 0, 'L', 1);
 			$this->Cell(95, 5, $field_mast['NroInscripcionSNC'], 0, 0, 'L');
 			$this->Ln(6);
@@ -129,7 +142,7 @@ class PDF extends FPDF {
 		//---------------------------------------------------
 		//	obtengo las firmas
 		list($_PREPARADO['Nombre'], $_PREPARADO['Cargo'], $_PREPARADO['Nivel']) = getFirma($field_mast['PreparadaPor']);
-		list($_REVISADO['Nombre'], $_REVISADO['Cargo'], $_REVISADO['Nivel']) = getFirma(getPersonaUnidadEjecutora($_PARAMETRO["CATCOMPRAS"]));
+		list($_REVISADO['Nombre'], $_REVISADO['Cargo'], $_REVISADO['Nivel']) = getFirma($_PARAMETRO["FIRMAOP3"]);
 		list($_APROBADO['Nombre'], $_APROBADO['Cargo'], $_APROBADO['Nivel']) = getFirma(getPersonaUnidadEjecutora($_PARAMETRO["CATADM"]));
 		//---------------------------------------------------
 		$this->SetXY(10, -40);		
@@ -208,7 +221,7 @@ $pdf->SetXY(10, $y);
 $pdf->SetDrawColor(0, 0, 0); $pdf->SetFillColor(0, 0, 0);
 $pdf->Rect(10, $y, 195, 0.1, "DF");
 //----
-$tipo_impuesto = "(".$field_mast['CodTipoServicio']." ".number_format($field_mast['FactorPorcentaje'], 2, ',', '.')." %): ";
+$tipo_impuesto = "(".$field_mast['CodTipoServicio']." ".number_format($field_mast['FactorImpuesto'], 2, ',', '.')." %): ";
 $monto_total_en_letras = convertir_a_letras($field_mast['MontoTotal'], "moneda");
 
 $pdf->SetFillColor(245, 245, 245);

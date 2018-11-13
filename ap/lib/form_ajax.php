@@ -471,22 +471,23 @@ elseif ($modulo == "orden_pago") {
 					$sql = "
 						(
 							SELECT
-								cb.CodCuenta,
-								o.ReferenciaTipoDocumento AS TipoOrden,
-								o.ReferenciaNroDocumento AS NroOrden,
+								td.CodCuentaProv AS CodCuenta,
+								oc.ReferenciaTipoDocumento AS TipoOrden,
+								oc.ReferenciaNroDocumento AS NroOrden,
 								pc.Descripcion AS NomCuenta,
-								(o.MontoObligacion - $MontoImpuesto) AS MontoVoucher,
+								(oc.MontoObligacion) AS MontoVoucher,
 								pc.TipoSaldo,
 								pc.FlagReqCC,
 								'01' AS Orden,
 								'Haber' AS Columna
-							FROM ap_obligaciones o
-							INNER JOIN ap_ctabancaria cb ON (o.NroCuenta = cb.NroCuenta)
-							INNER JOIN ac_mastplancuenta pc ON (cb.CodCuenta = pc.CodCuenta)
+							FROM
+								ap_obligaciones oc
+								INNER JOIN ap_tipodocumento td ON (oc.CodTipoDocumento = td.CodTipoDocumento)
+								INNER JOIN ac_mastplancuenta pc ON (td.CodCuentaProv = pc.CodCuenta)
 							WHERE
-								o.CodProveedor = '$field_op[CodProveedor]' AND
-								o.CodTipoDocumento = '$field_op[CodTipoDocumento]' AND
-								o.NroDocumento = '$field_op[NroDocumento]'
+								oc.CodProveedor = '$field_op[CodProveedor]' AND
+								oc.CodTipoDocumento = '$field_op[CodTipoDocumento]' AND
+								oc.NroDocumento = '$field_op[NroDocumento]'
 							GROUP BY CodCuenta
 						)
 						UNION

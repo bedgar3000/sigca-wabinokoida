@@ -70,18 +70,19 @@ if ($modulo == "formulario") {
 					UltimaFecha = NOW()";
 		execute($sql);
 		##	inserto
-		$CodPrecioHistoria = codigo('co_precios','CodPrecioHistoria',10);
-		$Correlativo = codigo('co_precios','Correlativo',10);
+		$CodPrecioHistoria = codigo('co_precioshistoria','CodPrecioHistoria',10);
+		$Correlativo = codigo('co_precioshistoria','Correlativo',10);
 		$sql = "INSERT INTO co_precioshistoria
 				SET
+					CodPrecioHistoria = '$CodPrecioHistoria',
 					CodOrganismo = '$CodOrganismo',
 					TipoDetalle = '$TipoDetalle',
 					CodItem = '$CodItem',
 					Secuencia = '1',
 					TipoAccion = 'A',
-					CodUnidadVenta = '$CodUnidadVenta',
-					FechaVigDesde = '$FechaVigDesde',
-					FechaVigHasta = '$FechaVigHasta',
+					CodUnidadVta = '$CodUnidadVenta',
+					FechaDesde = '$FechaVigDesde',
+					FechaHasta = '$FechaVigHasta',
 					MontoVentaAnt = '$PrecioMenor',
 					PrecioMayorAnt = '$PrecioMayor',
 					PrecioMenorAnt = '$PrecioMenor',
@@ -96,7 +97,6 @@ if ($modulo == "formulario") {
 					PorcVarPrecioMenor = '0.00',
 					PorcVarPrecioEspecial = '0.00',
 					Correlativo = '$Correlativo',
-					Estado = '$Estado',
 					UltimoUsuario = '$_SESSION[USUARIO_ACTUAL]',
 					UltimaFecha = NOW()";
 		execute($sql);
